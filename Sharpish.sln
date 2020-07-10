@@ -1,58 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.852
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30225.117
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sharpish", "Sharpish\Sharpish.vcxproj", "{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug_Static|ARM = Debug_Static|ARM
-		Debug_Static|ARM64 = Debug_Static|ARM64
 		Debug_Static|x64 = Debug_Static|x64
 		Debug_Static|x86 = Debug_Static|x86
-		Debug|ARM = Debug|ARM
-		Debug|ARM64 = Debug|ARM64
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
-		Release_Static|ARM = Release_Static|ARM
-		Release_Static|ARM64 = Release_Static|ARM64
 		Release_Static|x64 = Release_Static|x64
 		Release_Static|x86 = Release_Static|x86
-		Release|ARM = Release|ARM
-		Release|ARM64 = Release|ARM64
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug_Static|ARM.ActiveCfg = Debug_Static|ARM
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug_Static|ARM.Build.0 = Debug_Static|ARM
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug_Static|ARM64.ActiveCfg = Debug_Static|ARM64
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug_Static|ARM64.Build.0 = Debug_Static|ARM64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug_Static|x64.ActiveCfg = Debug_Static|x64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug_Static|x64.Build.0 = Debug_Static|x64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug_Static|x86.ActiveCfg = Debug_Static|Win32
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug_Static|x86.Build.0 = Debug_Static|Win32
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug|ARM.ActiveCfg = Debug|ARM
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug|ARM.Build.0 = Debug|ARM
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug|ARM64.Build.0 = Debug|ARM64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug|x64.ActiveCfg = Debug|x64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug|x64.Build.0 = Debug|x64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug|x86.ActiveCfg = Debug|Win32
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Debug|x86.Build.0 = Debug|Win32
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release_Static|ARM.ActiveCfg = Release_Static|ARM
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release_Static|ARM.Build.0 = Release_Static|ARM
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release_Static|ARM64.ActiveCfg = Release_Static|ARM64
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release_Static|ARM64.Build.0 = Release_Static|ARM64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release_Static|x64.ActiveCfg = Release_Static|x64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release_Static|x64.Build.0 = Release_Static|x64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release_Static|x86.ActiveCfg = Release_Static|Win32
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release_Static|x86.Build.0 = Release_Static|Win32
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release|ARM.ActiveCfg = Release|ARM
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release|ARM.Build.0 = Release|ARM
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release|ARM64.ActiveCfg = Release|ARM64
-		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release|ARM64.Build.0 = Release|ARM64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release|x64.ActiveCfg = Release|x64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release|x64.Build.0 = Release|x64
 		{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}.Release|x86.ActiveCfg = Release|Win32
