@@ -11,8 +11,17 @@ Sharpish offers the following features:
 * **Exceptions** - Extends std::exception to implement .Net equivalents: ArgumentException, NullReferenceException, etc.
 * **SIMD-Optimized Math** - Provides highly accelerated math objects you'd expect to find if you were using Unity, XAML, or some other C#-based UX library: Float2, Float3, Float4, Quaternion, Float4x3, Float4x4, etc.
 
+# Compatibility
+
+Right now, Sharpish only supports MSVC targeting x86 and x64 platforms. Help supporting other compilers and targets is welcome and appreciated.
+
 # Setup
-TODO
+
+The Build folder contains the latest build of Sharpish. To incorporate it into your project, reference the appropriate folders, add **Sharpish.lib** and include **Sharpish.h**.
+Sharpish uses the CS:: namespace.
 
 # Samples
+TODO
+
+# Guide
 TODO
