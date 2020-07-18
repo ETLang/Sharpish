@@ -13,7 +13,7 @@
 
 // Heavy modifications made by Evan Lang of Valorem, Inc. (elang@valorem.com)
 
-/*! \mainpage
+/*!
 *
 * \section License
 *
@@ -158,12 +158,6 @@ struct __StandardDisambiguation<To, From, Interface, Base, false, false>
 		template<typename To, typename From> \
 		static To* DisambiguationCast(From* obj) { return Discoverable::DisambiguationCast<To, From>(obj); }
 
-//! \brief
-//! Provides discovery information for a supported COM interface.
-//! 
-//! \tparam I     The type of the interface being discovered.
-//! 
-//! \tparam tIID           The interface ID of \a I.
 template<typename I>
 class DECLSPEC_NOVTABLE ComDiscovery1
 {
@@ -183,12 +177,6 @@ public:
 		return static_cast<To*>(obj);
 	}
 
-	//! \brief
-	//! Represents the main method for interface discovery infrastructure.
-	//! 
-	//! \remarks
-	//! This method is called internally by the ComInstance class when its
-	//! QueryInterface method is invoked.
 	template<typename tObject>
 	static HRESULT InternalQueryInterface(REFIID theIID, tObject * theObj, void ** theOut)
 	{

@@ -68,7 +68,6 @@
     <ClInclude Include="FileHelper.h" />
     <ClInclude Include="FlagsOps.h" />
     <ClInclude Include="FunctionTemplateHelp.h" />
-    <ClInclude Include="half.h" />
     <ClInclude Include="Hashing.h" />
     <ClInclude Include="MacroRepeater.h" />
     <ClInclude Include="Make.h" />

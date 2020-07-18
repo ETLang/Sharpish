@@ -1,5 +1,17 @@
 #pragma once
 
+/**
+ * \mainpage
+ * 
+ * \section Welcome
+ * 
+ * Hi there. Welcome.
+ * 
+ * \section License
+ * 
+ * I don't care, do whatever.
+ * 
+ */
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -107,7 +119,6 @@ T Def() { static T _value; return _value; }
 #include "ThreadSignal.h"
 #include "Array.h"
 #include "MathTypes.h"
-#include "half.h"
 #include "Range.h"
 #include "Rational.h"
 #include "Rect.h"
@@ -136,7 +147,3 @@ typename const T* runtime_cast(const U* ptr) { return ptr ? reinterpret_cast<con
 
 template<typename T, typename U>
 typename T* runtime_cast(const CS::com_ptr<U>& ptr) { return ptr ? ptr.CastTo<T>() : (T*)nullptr; }
-
-
-#define DELEGATE(Method) MakeDelegate(this, &__Ref<decltype(this)>::Raw::Method)
-#define STATIC_DELEGATE(Method) MakeDelegate(&Method)

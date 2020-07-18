@@ -42,9 +42,6 @@
     <ClInclude Include="FunctionTemplateHelp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="half.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Make.h">
       <Filter>Header Files</Filter>
     </ClInclude>
