@@ -5,6 +5,12 @@ VisualStudioVersion = 16.0.30225.117
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sharpish", "Sharpish\Sharpish.vcxproj", "{5D54DBAF-E70A-4670-99F7-CCC9F21F8670}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{03A877D4-464B-49D8-A0DD-CF901E54DC89}"
+	ProjectSection(SolutionItems) = preProject
+		Doxyfile = Doxyfile
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_Static|x64 = Debug_Static|x64

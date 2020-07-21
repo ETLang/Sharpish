@@ -76,7 +76,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectModelFoundation.h" />
     <ClInclude Include="ObjectModelTraits.h" />
-    <ClInclude Include="weak_ptr.h" />
+    <ClInclude Include="WeakReference.h" />
     <ClInclude Include="Range.h" />
     <ClInclude Include="Rational.h" />
     <ClInclude Include="Rect.h" />

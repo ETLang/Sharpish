@@ -111,13 +111,13 @@
     <ClInclude Include="com_ptr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="weak_ptr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Array.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WeakReference.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
