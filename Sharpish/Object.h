@@ -3,7 +3,7 @@
 #include <vector>
 #include "Make.h"
 #include "ComClass.h"
-#include "weak_ptr.h"
+#include "WeakReference.h"
 
 typedef unsigned __int32 FourCC;
 

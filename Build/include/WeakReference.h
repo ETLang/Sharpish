@@ -3,7 +3,7 @@
 #include "ComClass.h"
 
 // WeakReference implementation, originally by Microsoft. Minor modifications were made
-// to make it work with EVE's object model internally.
+// to make it work with Sharpish's object model internally.
 
 namespace CS
 {

@@ -6,7 +6,7 @@
 // and pointers within the bodies of functions.
 
 #include "BasicInterfaces.h"
-#include "weak_ptr.h"
+#include "WeakReference.h"
 #include <assert.h>
 
 #pragma warning(push)

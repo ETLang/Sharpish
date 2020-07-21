@@ -139,7 +139,6 @@ template<class T, int TSize> void repeat(T itemarray[TSize], const T& value, int
 #include "ObjectModelTraits.h"
 #include "ComClass.h"
 #include "com_ptr.h"
-#include "weak_ptr.h"
 #include "Make.h"
 #include "TypeID.h"
 #include "Object.h"
