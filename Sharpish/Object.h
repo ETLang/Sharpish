@@ -267,6 +267,40 @@ namespace CS
 
 	}
 
+	/**
+	 * \brief Template to assist implementing reference counted classes.
+	 * \param Class The class type being implemented.
+	 * \param BaseClass The base class that the defining class will inherit from.
+	 * \param Implements A set of 0 or more interfaces to implement
+	 * 
+	 * Use ComObject to implement your own reference-counted class types.
+	 * 
+	 * The advantages to using ComObject include:
+	 * - Automatic implementation of IUnknown and safe runtime type casting using `runtime_cast<T>()`.
+	 * - Safe lifecycle management, using com_ptr
+	 * - Ability to use weak referencing, using weak_ptr
+	 * - Ability to request the root ID of the implementing type using GetTypeID
+	 * 
+	 * Reference-counted class types must declare an associated UUID.
+	 * 
+	 * When instantiating such classes, the proper method is to use `Make<T>()` instead of calling `new()`:
+	 * `com_ptr<Car> newCar = Make<Car>();`
+	 * 
+	 * The following example declares a class Car, which derives from Object, followed by a class Truck
+	 * that inherits Car:
+	 * 
+	 *     class comid("b7a9ea93-6b5e-4fde-9a6c-ea9872a00e7e") Car : 
+	 *         public CS::ComObject<Car, Object>
+	 *     {
+	 *     };
+	 * 
+	 *     class comid("abcdef01-6b5e-4fde-9a6c-ea9872a00e7e") Truck :
+	 *         public CS::ComObject<Truck, Car>
+	 *     {
+	 *     };
+	 *
+	 * 
+	 */
 #if SUPPORTED_CPP0X
 
 	template<typename Class, typename BaseClass = ComType<>, typename... Implements>
@@ -501,24 +535,18 @@ namespace CS
 		}
 	};
 
-	/// <summary> The base of most major classes in the EVE object model. </summary>
-	/// <remarks>
-	/// 		 Implements IUnknown, weak referencing, 
-	/// 		 basic support for EVE's serialization mechanism.
-	/// </remarks>
+	/**
+	 * \brief Base class for reference-counted types defined using Sharpish.
+	 * 
+	 * When declaring your own reference type, don't directly inherit from Object
+	 * or any other reference type. Instead, inherit from ComObject and pass your
+	 * base type as the appropriate template parameter.
+	 * 
+	 * \see CS::ComObject
+	 */
 	class __declspec(uuid("b7a9ea93-6b5e-4fde-9a6c-ea9872a00e7e"))
-		Object : public ComObject<Object>
-	{
-	public:
-		PROPERTY_READONLY(FourCC, SerializationId);
-		virtual FourCC GetSerializationId() { return 0; }
-	};
+		Object : public ComObject<Object> { };
 
-	template<class T>
-	FourCC GetSerialIDOfCommonType()
-	{
-		return ((T*)0)->T::GetSerializationId();
-	}
 	}
 
 template<class T>
