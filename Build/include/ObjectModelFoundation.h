@@ -10,28 +10,6 @@
 namespace CS
 {
 
-#pragma region ref_cast - casts a variable of any known type to a simple pointer to that value.
-
-	template<class T>
-	T* ref_cast(T& x) { return &x; }
-
-	template<class T>
-	const T* ref_cast(const T& x) { return &x; }
-
-	template<class T>
-	T* ref_cast(T* x) { return x; }
-
-	template<class T>
-	const T* ref_cast(const T* x) { return x; }
-
-	template<class T>
-	T* ref_cast(const com_ptr<T>& x) { return x.Get(); }
-
-	template<class T>
-	T* ref_cast(const weak_ptr<T>& x) { return x.Resolve().Get(); }
-
-#pragma endregion
-
 #pragma region box_cast - casts a variable of any known type to a BoxedValue. Primitives and value types get wrapped in a ComBox.
 
 	template<class T>
@@ -84,23 +62,6 @@ namespace CS
 #pragma endregion
 
 #pragma region unbox_cast - casts a BoxedValue to its unboxed type. 
-
-	template<class T>
-	typename std::enable_if<__Ref<T>::IsValueType, bool>::type unbox(const BoxedValue& obj, T* output)
-	{
-		auto box = runtime_cast<ComBox<typename __Ref<T>::Raw>>(obj);
-		
-		if(!box) return false;
-
-		*output = box->Value;
-		return true;
-	}
-
-	template<class T>
-	typename std::enable_if<!__Ref<T>::IsValueType, bool>::type unbox(const BoxedValue& obj, T* output)
-	{
-		return runtime_cast<typename __Ref<T>::Raw>(obj); 
-	}
 
 	template<class T>
 	typename std::enable_if<std::is_same<T, void>::value, void>::type unbox_cast(const BoxedValue& obj)

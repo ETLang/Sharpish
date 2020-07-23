@@ -13,7 +13,7 @@
 
 // Heavy modifications made by Evan Lang of Valorem, Inc. (elang@valorem.com)
 
-/*! \mainpage
+/*!
 *
 * \section License
 *
@@ -88,39 +88,11 @@ struct hold_uuidof { static GUID __IID; };
 ////////////////////////////////////
 // Define constructor-forwarding macro
 ////////////////////////////////////
-#if (SUPPORTED_CPP0X != 0)
 #define FWD_CONSTRUCTOR(Class, Base, ...) \
 	template<typename ... tParams> \
 	Class(tParams && ... theParams) \
 	: Base( std::forward<tParams>(theParams)... ), ## __VA_ARGS__ \
 	{ }
-#else
-
-#define FWD_CONSTRUCTOR(Class, Base, ...) \
-	Class() : Base(), ## __VA_ARGS__ \
-	{ } \
-	template<typename tParam1> \
-	Class(tParam1 theParam1) \
-		: Base(theParam1), ## __VA_ARGS__ \
-	{ } \
-	template<typename tParam1, typename tParam2> \
-	Class(tParam1 theParam1, tParam2 theParam2) \
-		: Base(theParam1, theParam2), ## __VA_ARGS__ \
-	{ } \
-	template<typename tParam1, typename tParam2, typename tParam3> \
-	Class(tParam1 theParam1, tParam2 theParam2, tParam3 theParam3) \
-		: Base(theParam1, theParam2, theParam3), ## __VA_ARGS__ \
-	{ } \
-	template<typename tParam1, typename tParam2, typename tParam3, typename tParam4> \
-	Class(tParam1 theParam1, tParam2 theParam2, tParam3 theParam3, tParam4 theParam4) \
-		: Base(theParam1, theParam2, theParam3, theParam4), ## __VA_ARGS__ \
-	{ } \
-	template<typename tParam1, typename tParam2, typename tParam3, typename tParam4, typename tParam5> \
-	Class(tParam1 theParam1, tParam2 theParam2, tParam3 theParam3, tParam4 theParam4, tParam5 theParam5) \
-		: Base(theParam1, theParam2, theParam3, theParam4, theParam5), ## __VA_ARGS__ \
-	{ }
-
-#endif	// (SUPPORTED_CPP0X != 0)
 
 template<typename To, typename From, typename Interface, typename Base,
 	bool ToSame = std::is_same<To, Interface>::value,
@@ -158,12 +130,6 @@ struct __StandardDisambiguation<To, From, Interface, Base, false, false>
 		template<typename To, typename From> \
 		static To* DisambiguationCast(From* obj) { return Discoverable::DisambiguationCast<To, From>(obj); }
 
-//! \brief
-//! Provides discovery information for a supported COM interface.
-//! 
-//! \tparam I     The type of the interface being discovered.
-//! 
-//! \tparam tIID           The interface ID of \a I.
 template<typename I>
 class DECLSPEC_NOVTABLE ComDiscovery1
 {
@@ -183,12 +149,6 @@ public:
 		return static_cast<To*>(obj);
 	}
 
-	//! \brief
-	//! Represents the main method for interface discovery infrastructure.
-	//! 
-	//! \remarks
-	//! This method is called internally by the ComInstance class when its
-	//! QueryInterface method is invoked.
 	template<typename tObject>
 	static HRESULT InternalQueryInterface(REFIID theIID, tObject * theObj, void ** theOut)
 	{
@@ -360,8 +320,6 @@ struct _ComTraits<Interface, void> \
 	typedef ComDiscovery<ComDiscovery1<Interface>, __VA_ARGS__> Discoverable; \
 };
 
-#if (SUPPORTED_CPP0X != 0)
-
 //! \brief
 //! Provides discovery information about any number of COM interfaces.
 //! 
@@ -381,55 +339,6 @@ class DECLSPEC_NOVTABLE ComDiscovery<I0, I1_N...> :
 template <typename I0>
 class DECLSPEC_NOVTABLE ComDiscovery<I0> : public _ComTraits<I0>::Discoverable { };
 
-#else
-
-template<typename I0 = _Null, typename I1 = _Null, typename I2 = _Null, typename I3 = _Null, typename I4 = _Null, typename I5 = _Null>
-class DECLSPEC_NOVTABLE ComDiscovery;
-
-template<typename I0>
-class DECLSPEC_NOVTABLE ComDiscovery<I0, _Null, _Null, _Null, _Null, _Null> : public _ComTraits<I0>::Discoverable { };
-
-template<typename I0, typename I1>
-class DECLSPEC_NOVTABLE ComDiscovery<I0, I1, _Null, _Null, _Null, _Null> :
-	public ComDiscoveryCompound
-	<
-	typename _ComTraits<I0>::Discoverable,
-	ComDiscovery<I1>
-	> { };
-
-template<typename I0, typename I1, typename I2>
-class DECLSPEC_NOVTABLE ComDiscovery<I0, I1, I2, _Null, _Null, _Null> :
-	public ComDiscoveryCompound
-	<
-	typename _ComTraits<I0>::Discoverable,
-	ComDiscovery<I1, I2>
-	> { };
-
-template<typename I0, typename I1, typename I2, typename I3>
-class DECLSPEC_NOVTABLE ComDiscovery<I0, I1, I2, I3, _Null, _Null> :
-	public ComDiscoveryCompound
-	<
-	typename _ComTraits<I0>::Discoverable,
-	ComDiscovery<I1, I2, I3>
-	> { };
-
-template<typename I0, typename I1, typename I2, typename I3, typename I4>
-class DECLSPEC_NOVTABLE ComDiscovery<I0, I1, I2, I3, I4, _Null> :
-	public ComDiscoveryCompound
-	<
-	typename _ComTraits<I0>::Discoverable,
-	ComDiscovery<I1, I2, I3, I4>
-	> { };
-
-template<typename I0, typename I1, typename I2, typename I3, typename I4, typename I5>
-class DECLSPEC_NOVTABLE ComDiscovery :
-	public ComDiscoveryCompound
-	<
-	typename _ComTraits<I0>::Discoverable,
-	ComDiscovery<I1, I2, I3, I4, I5>
-	> { };
-
-#endif
 
 template<typename T, typename _N1>
 struct _ComTraits
@@ -458,8 +367,6 @@ struct _ComTraits<T, typename _derp_void_alias<typename T::Discoverable>::type>
 
 // Variadic-template versions
 
-#if (SUPPORTED_CPP0X != 0)
-
 template<typename ... I0_N>
 class DECLSPEC_NOVTABLE ComEntry;
 
@@ -478,33 +385,9 @@ public:
 	FWD_CONSTRUCTOR(ComEntry, I0);
 };
 
-#else
-
-template<typename I0, typename I1 = _Null, typename I2 = _Null, typename I3 = _Null, typename I4 = _Null, typename I5 = _Null>
-class DECLSPEC_NOVTABLE ComEntry;
-
-template<typename I0>
-class DECLSPEC_NOVTABLE ComEntry<I0, _Null, _Null, _Null, _Null, _Null> : public I0 { public: FWD_CONSTRUCTOR(ComEntry, I0); };
-
-template<typename I0, typename I1>
-class DECLSPEC_NOVTABLE ComEntry<I0, I1, _Null, _Null, _Null, _Null> : public I0, public I1 { public: FWD_CONSTRUCTOR(ComEntry, I0); };
-
-template<typename I0, typename I1, typename I2>
-class DECLSPEC_NOVTABLE ComEntry<I0, I1, I2, _Null, _Null, _Null> : public I0, public I1, public I2 { public: FWD_CONSTRUCTOR(ComEntry, I0); };
-
-template<typename I0, typename I1, typename I2, typename I3>
-class DECLSPEC_NOVTABLE ComEntry<I0, I1, I2, I3, _Null, _Null> : public I0, public I1, public I2, public I3 { public: FWD_CONSTRUCTOR(ComEntry, I0); };
-
-template<typename I0, typename I1, typename I2, typename I3, typename I4>
-class DECLSPEC_NOVTABLE ComEntry<I0, I1, I2, I3, I4, _Null> : public I0, public I1, public I2, public I3, public I4 { public: FWD_CONSTRUCTOR(ComEntry, I0); };
-
-#endif	//(SUPPORTED_CPP0X != 0)
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#if SUPPORTED_CPP0X
 
 template<typename BaseType = IObject, typename... Implements>
 class ComInstance : public ComEntry<BaseType, Implements...>
@@ -514,19 +397,6 @@ protected:
 	typedef ComEntry<BaseType, Implements...> Base;
 public:
 	typedef ComInstance<BaseType, Implements...> Discoverable;
-
-#else
-
-template<typename BaseType, typename I1 = _Null, typename I2 = _Null, typename I3 = _Null, typename I4 = _Null, typename I5 = _Null>
-class ComInstance : public ComEntry<BaseType, I1, I2, I3, I4, I5>
-{
-	typedef ComDiscovery<BaseType, I1, I2, I3, I4, I5> DiscoverableBase;
-protected:
-	typedef ComEntry<BaseType, I1, I2, I3, I4, I5> Base;
-public:
-	typedef ComInstance<BaseType, I1, I2, I3, I4, I5> Discoverable;
-
-#endif
 
 protected:
 	ULONG _refCount;
@@ -653,8 +523,6 @@ public:
 
 typedef ComInstance<CS::IObject> ComBase;
 
-#if SUPPORTED_CPP0X
-
 template<typename Class, typename BaseClass = ComBase, typename... Implements>
 class ComClass : public BaseClass, public Implements...
 {
@@ -662,17 +530,6 @@ class ComClass : public BaseClass, public Implements...
 
 protected:
 	typedef ComClass<Class, BaseClass, Implements...> Base;
-
-#else
-
-template<typename Class, typename BaseClass = ComBase, typename I1 = _Null, typename I2 = _Null, typename I3 = _Null, typename I4 = _Null, typename I5 = _Null>
-class ComClass : public BaseClass, public ComEntry<I1, I2, I3, I4, I5>
-{
-	typedef ComDiscovery<BaseClass, I1, I2, I3, I4, I5> DiscoverableBase;
-protected:
-	typedef ComClass<Class, BaseClass, I1, I2, I3, I4, I5> Base;
-
-#endif
 
 public:
 	typedef Base Discoverable;

@@ -6,7 +6,7 @@
 // and pointers within the bodies of functions.
 
 #include "BasicInterfaces.h"
-#include "weak_ptr.h"
+#include "WeakReference.h"
 #include <assert.h>
 
 #pragma warning(push)
@@ -129,6 +129,17 @@ namespace CS {
 
     class weak_ref;
 
+    /**
+     * \brief Smart pointer reference to a reference-counted object
+     * \param T Type of object being referenced. Must implement IUnknown.
+     * 
+     * A smart pointer works like a pointer, with the added feature of 
+     * automatically calling AddRef and Release on the object it references.
+     * 
+     * This implementation is largely borrowed from Microsoft's [ComPtr]
+     * (https://docs.microsoft.com/en-us/cpp/cppcx/wrl/comptr-class?view=vs-2019)
+     * class to be made portable.
+     */
     template <typename T>
     class com_ptr
     {
@@ -161,22 +172,30 @@ namespace CS {
 
     public:
 #pragma region constructors
+        /** Constructs a null pointer. */
         com_ptr() throw() : _ptr(nullptr) { }
 
+        /** Constructs a null pointer. */
         com_ptr(nullptr_t) throw() : _ptr(nullptr) { }
 
+        /**
+         * Constructs from a raw pointer.
+         * 
+         * \param other A raw pointer (must be castable to T)
+         */
         template<class U>
         com_ptr(_In_opt_ U *other) throw() : _ptr(other)
         {
             InternalAddRef();
         }
 
+        /** Copy constructor. */
         com_ptr(const com_ptr& other) throw() : _ptr(other._ptr)
         {
             InternalAddRef();
         }
 
-        // copy ctor that allows to instanatiate class when U* is convertible to T*
+        /** Copy constructor where U is castable to T. */
         template<class U>
         com_ptr(const com_ptr<U> &other, typename std::enable_if<std::is_convertible<U*, T*>::value, void *>::type * = 0) throw() :
             _ptr(other._ptr)
@@ -184,6 +203,7 @@ namespace CS {
             InternalAddRef();
         }
 
+        /** Move constructor. */
         com_ptr(_Inout_ com_ptr &&other) throw() : _ptr(nullptr)
         {
             if (this != reinterpret_cast<com_ptr*>(&reinterpret_cast<byte&>(other)))
@@ -192,7 +212,7 @@ namespace CS {
             }
         }
 
-        // Move ctor that allows instantiation of a class when U* is convertible to T*
+        /** Move constructor where U is castable to T. */
         template<class U>
         com_ptr(_Inout_ com_ptr<U>&& other, typename std::enable_if<std::is_convertible<U*, T*>::value, void *>::type * = 0) throw() :
             _ptr(other._ptr)
@@ -207,12 +227,14 @@ namespace CS {
         }
 
 #pragma region assignment
+        /** Assign to null. */
         com_ptr& operator=(nullptr_t) throw()
         {
             InternalRelease();
             return *this;
         }
 
+        /** Assign from raw pointer. */
         com_ptr& operator=(_In_opt_ T *other) throw()
         {
             if (_ptr != other)
@@ -222,6 +244,11 @@ namespace CS {
             return *this;
         }
 
+        /**
+         * \brief Assign from raw pointer, where U is castable to T.
+         * 
+         * \param U The other pointer type (must be castable to T)
+         */
         template <typename U>
         com_ptr& operator=(_In_opt_ U *other) throw()
         {
@@ -229,6 +256,7 @@ namespace CS {
             return *this;
         }
 
+        /** Assign from com_ptr. */
         com_ptr& operator=(const com_ptr &other) throw()
         {
             if (_ptr != other._ptr)
@@ -238,6 +266,11 @@ namespace CS {
             return *this;
         }
 
+        /**
+         * \brief Assign from com_ptr, where U is castable to T.
+         * 
+         * \param U The other pointer type (must be castable to T)
+         */
         template<class U>
         com_ptr& operator=(const com_ptr<U>& other) throw()
         {
@@ -245,12 +278,18 @@ namespace CS {
             return *this;
         }
 
+        /** R-Value Assign from com_ptr. */
         com_ptr& operator=(_Inout_ com_ptr &&other) throw()
         {
             com_ptr(static_cast<com_ptr&&>(other)).Swap(*this);
             return *this;
         }
 
+        /**
+         * \brief R-Value Assign from com_ptr, where U is castable to T.
+         * 
+         * \param U The other pointer type (must be castable to T)
+         */
         template<class U>
         com_ptr& operator=(_Inout_ com_ptr<U>&& other) throw()
         {
@@ -258,6 +297,7 @@ namespace CS {
             return *this;
         }
 
+        /** Dereference pointer */
         T& operator *() throw()
         {
             return *Get();
@@ -266,6 +306,14 @@ namespace CS {
 #pragma endregion
 
 #pragma region modifiers
+        
+        /**
+         * \brief R-Value swap two pointers.
+         * 
+         * Swapping can save performance by avoiding redundant AddRef/Release calls.
+         * 
+         * \param r Other pointer being swapped
+         */
         void Swap(_Inout_ com_ptr&& r) throw()
         {
             T* tmp = _ptr;
@@ -273,6 +321,13 @@ namespace CS {
             r._ptr = tmp;
         }
 
+        /**
+         * \brief Swap two pointers.
+         * 
+         * Swapping can save performance by avoiding redundant AddRef/Release calls.
+         *
+         * \param r Other pointer being swapped
+         */
         void Swap(_Inout_ com_ptr& r) throw()
         {
             T* tmp = _ptr;
@@ -291,6 +346,7 @@ namespace CS {
             return _ptr == rhs;
         }
 
+        /** Get the raw pointer */
         T* Get() const throw()
         {
             return _ptr;
@@ -311,22 +367,30 @@ namespace CS {
             return Details::StoredRef<const com_ptr<T>>(this);
         }
 
+        /** Get the address of the raw pointer (pass to QueryInterface) */
         T* const* GetAddressOf() const throw()
         {
             return &_ptr;
         }
 
+        /** Get the address of the raw pointer (pass to QueryInterface) */
         T** GetAddressOf() throw()
         {
             return &_ptr;
         }
 
+        /** Release existing value and get the address of the raw pointer (pass to QueryInterface) */
         T** ReleaseAndGetAddressOf() throw()
         {
             InternalRelease();
             return &_ptr;
         }
 
+        /**
+         * \brief Disassociates this ComPtr object from the interface that it represents.
+         * 
+         * \return The disassociated pointer
+         */
         T* Detach() throw()
         {
             T* ptr = _ptr;
@@ -334,6 +398,11 @@ namespace CS {
             return ptr;
         }
 
+        /**
+         * \brief Associates this ComPtr with the interface type specified by the current template type parameter.
+         * 
+         * \param other The pointer to associate
+         */
         void Attach(_In_opt_ InterfaceType* other) throw()
         {
             if (_ptr != nullptr)
@@ -348,13 +417,13 @@ namespace CS {
             _ptr = other;
         }
 
+        /** Equivalent to setting the pointer to null. */
         unsigned long Reset()
         {
             return InternalRelease();
         }
 
         // query for U interface
-
         template<typename U>
         U* CastTo() const throw()
         {
@@ -367,13 +436,26 @@ namespace CS {
             return _ptr;
         }
 
+        /**
+         * \brief Returns a ComPtr object that represents the interface identified by the specified template parameter.
+         * 
+         * \param p [Out] The returned pointer
+         * \param U The interface type to query for
+         * \return S_OK if successful; otherwise an error code.
+         */
         template<typename U>
         HRESULT As(_Inout_ Details::StoredRef<com_ptr<U>> p) const throw()
         {
             return reinterpret_cast<IUnknown*>(_ptr)->QueryInterface(_uuidof(U), p);
         }
 
-        // query for U interface
+        /**
+         * \brief Returns a ComPtr object that represents the interface identified by the specified template parameter.
+         *
+         * \param p [Out] The returned pointer
+         * \param U The interface type to query for
+         * \return S_OK if successful; otherwise an error code.
+         */
         template<typename U>
         HRESULT As(_Out_ com_ptr<U>* p) const throw()
         {
@@ -381,6 +463,13 @@ namespace CS {
         }
 
         // query for riid interface and return as IObject
+        /**
+         * \brief Returns a ComPtr object that represents the interface identified by the unique identifier.
+         *
+         * \param riid The unique ID of the interface to query for
+         * \param p [Out] The returned pointer
+         * \return S_OK if successful; otherwise an error code.
+         */
         HRESULT AsIID(REFIID riid, _Out_ com_ptr<IObject>* p) const throw()
         {
             return reinterpret_cast<IUnknown*>(_ptr)->QueryInterface(riid, reinterpret_cast<void**>(p->ReleaseAndGetAddressOf()));
@@ -546,20 +635,41 @@ namespace CS {
     // it'll retain the weak reference and keep querying it.
     //
     // This implementation also does not depend on IInspectable
+
+
+    /**
+     * \brief A weak reference to a reference-counted object.
+     * 
+     * Unlike a smart pointer, the weak reference cannot be treated as an analog of a pointer.
+     * Call `Resolve()` on a weak reference to get a `com_ptr<T>` reference to the object.
+     * 
+     * If the object has been destroyed, `Resolve()' will return null. Always check that the
+     * result of `Resolve()` is not null before using it.
+     * 
+     * \param T The object type being referenced.
+     */
     template<class T>
     class weak_ptr : public weak_ref
     {
     public:
+        /** Constructs a null pointer. */
         weak_ptr() throw() : weak_ref(nullptr) { }
 
-        weak_ptr(decltype(__nullptr)) throw() : weak_ref(nullptr) { }
+        /** Constructs a null pointer. */
+        weak_ptr(nullptr_t) throw() : weak_ref(nullptr) { }
 
+        /** Constructs from an IWeakReferenceSource */
         weak_ptr(_In_opt_ Ext::IWeakReferenceSource* ptr) throw() : weak_ref(nullptr)
         {
             if (ptr != nullptr)
                 ptr->GetWeakReference(GetAddressOf());
         }
 
+        /**
+         * \brief Constructs from an object.
+         * 
+         * \param ptr Pointer to a live object to get a weak reference of. Must not be null.
+         */
         template<class T>
         weak_ptr(_In_opt_ T* ptr) throw() : weak_ref(nullptr)
         {
@@ -567,6 +677,12 @@ namespace CS {
                 static_cast<Ext::IWeakReferenceSource*>(ptr)->GetWeakReference(&_ptr);
         }
 
+        /**
+         * \brief Constructs from an object.
+         * 
+         * \param U The object pointer type (must be castable to T)
+         * \param ptr Pointer to a live object to get a weak reference of. Must not be null.
+         */
         template<class U, std::enable_if_t<std::is_base_of_v<Ext::IWeakReferenceSource, U>, int> = 0>
         weak_ptr(const com_ptr<U>& ptr) throw() : weak_ref(nullptr)
         {
@@ -587,22 +703,26 @@ namespace CS {
             }
         }
 
+        /** Copy constructor */
         weak_ptr(const weak_ptr& ptr) throw() : weak_ref(ptr) { }
 
+        /** Move constructor */
         weak_ptr(_Inout_ weak_ptr&& ptr) throw() : weak_ref(ptr) { }
-
-        weak_ptr(const weak_ref& ptr) throw() : weak_ref(ptr) { }
-
-        weak_ptr(_Inout_ weak_ref&& ptr) throw() : weak_ref(ptr) { }
 
         ~weak_ptr() throw() { }
 
+        /**
+         * \brief Resolve a weak reference to a different type.
+         * 
+         * \param U The interface type to resolve from the object
+         * \return A com_ptr to the resolved object, or null if the object has been destroyed or cannot be cast to U.
+         */
         template<class U>
         com_ptr<U> Resolve() const
         {
             com_ptr<U> out;
 
-            // I argue that the const_cast is perfectly reasonable here, because these days const is nothing but
+            // I argue that the const_cast is perfectly reasonable here, because const is 
             // an organizational tool for developers; the compiler doesn't really use it to optimize anything.
             // Hence, it's more important to preserve the *spirit* of constness than the techical definition.
             // A reference count and internal weak reference stuff are perfect examples of something that can change
@@ -614,6 +734,11 @@ namespace CS {
             return out;
         }
 
+        /**
+         * \brief Resolve a weak reference.
+         * 
+         * \return A com_ptr to the resolved object, or null if the object has been destroyed.
+         */
         com_ptr<T> Resolve() const
         {
             return Resolve<T>();
@@ -625,12 +750,14 @@ namespace CS {
         }
 
 #pragma region assignment
+        /** Assign to null */
         weak_ptr& operator=(nullptr_t) throw()
         {
             InternalRelease();
             return *this;
         }
 
+        /** Assign from IWeakReference */
         weak_ptr& operator=(_In_opt_ Ext::IWeakReference *other) throw()
         {
             if (_ptr != other)
@@ -647,6 +774,7 @@ namespace CS {
         //    return *this;
         //}
 
+        /** Assign from another weak_ptr */
         weak_ptr& operator=(const weak_ptr &other) throw()
         {
             if (_ptr != other._ptr)
@@ -656,6 +784,11 @@ namespace CS {
             return *this;
         }
 
+        /**
+         * \brief Assign from a weak_ptr of a different type
+         * 
+         * \param U Pointer type being assigned from. Must be castable to T.
+         */
         template<class U>
         weak_ptr& operator=(const weak_ptr<U>& other) throw()
         {
@@ -663,12 +796,18 @@ namespace CS {
             return *this;
         }
 
+        /** Assign from another weak_ptr */
         weak_ptr& operator=(_Inout_ weak_ptr &&other) throw()
         {
             weak_ptr(static_cast<weak_ptr&&>(other)).Swap(*this);
             return *this;
         }
 
+        /**
+         * \brief Assign from a weak_ptr of a different type
+         *
+         * \param U Pointer type being assigned from. Must be castable to T.
+         */
         template<class U>
         weak_ptr& operator=(_Inout_ weak_ptr<U>&& other) throw()
         {
@@ -847,66 +986,4 @@ namespace std
     };
 }
 
-//// Overloaded global function to provide to IID_PPV_ARGS that support Details::StoredRef
-//template<typename T>
-//void** IID_PPV_ARGS_Helper(CS::Details::StoredRef<T> pp) throw()
-//{
-//    static_assert(__is_base_of(IUnknown, T::InterfaceType), "T has to derive from IUnknown");
-//    return pp;
-//}
-
-// Overloaded global function to provide to IID_INS_ARGS that support Details::StoredRef
-//template<typename T>
-//void** IID_INS_ARGS_Helper(CS::Details::StoredRef<T> pp) throw()
-//{
-//    static_assert(__is_base_of(IInspectable, T::InterfaceType), "T has to derive from IInspectable");
-//    return pp;
-//}
-
-//namespace Windows
-//{
-//    namespace Foundation
-//    {
-//        template<typename T>
-//        inline HRESULT ActivateInstance(
-//            _In_ HSTRING activatableClassId,
-//            _Inout_ Details::StoredRef<T> instance) throw()
-//        {
-//            return ActivateInstance(activatableClassId, instance.ReleaseAndGetAddressOf());
-//        }
-//
-//        template<typename T>
-//        inline HRESULT GetActivationFactory(
-//            _In_  HSTRING activatableClassId,
-//            _Inout_ Details::StoredRef<T>  factory) throw()
-//        {
-//            return GetActivationFactory(activatableClassId, factory.ReleaseAndGetAddressOf());
-//        }
-//    }
-//}
-//
-//namespace ABI
-//{
-//    namespace Windows
-//    {
-//        namespace Foundation
-//        {
-//            template<typename T>
-//            inline HRESULT ActivateInstance(
-//                _In_ HSTRING activatableClassId,
-//                _Inout_ Details::StoredRef<T> instance) throw()
-//            {
-//                return ActivateInstance(activatableClassId, instance.ReleaseAndGetAddressOf());
-//            }
-//
-//            template<typename T>
-//            inline HRESULT GetActivationFactory(
-//                _In_  HSTRING activatableClassId,
-//                _Inout_ Details::StoredRef<T>  factory) throw()
-//            {
-//                return GetActivationFactory(activatableClassId, factory.ReleaseAndGetAddressOf());
-//            }
-//        }
-//    }
-//}
 #pragma warning(pop)

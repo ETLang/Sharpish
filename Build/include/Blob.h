@@ -4,11 +4,6 @@
 
 namespace CS
 {
-	cominterface comid("E2291BD0-73B8-492A-9CDB-CE9FF224D9B9") ID3DBlob2
-		: public IObject, public ID3DBlob
-	{
-	};
-
 	class comid("332B9C75-2B73-43A5-A656-14CEFE8385D0")
 	Blob : public ComObject<Blob, Object, ID3DBlob>
 	{

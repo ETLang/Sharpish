@@ -12,16 +12,6 @@ template<class T, class U> T HashAppend(T& hash, U appendValue) { return hash = 
 
 namespace std
 {
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	/// <summary>	Defines a default hash function for any flat struct. </summary>
-	///
-	/// <remarks>	Defining this allows essentially any flat (no reference members) data type to be 
-	/// 			hashable. 
-	/// 			
-	/// 			Evan, 1/21/2014. </remarks>
-	///
-	/// <typeparam name="T">	Generic type parameter. </typeparam>
-	////////////////////////////////////////////////////////////////////////////////////////////////////
 	template<class T>
 	struct hash_EveStandard
 	{

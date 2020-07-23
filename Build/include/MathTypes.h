@@ -1,30 +1,28 @@
 #pragma once
 
-#include <DirectXMath.h>
+// Library of common math types used by EVE and EVE-based applications.
+// Types include:
+//
+// Floating-point vectors: 
+//     Float2, Float3, Float4
+//     Float2A, Float3A, Float4A  (16-byte aligned)
+//
+// Integer Vectors:
+//     Int2, Int3, Int4
+//     Int2A, Int3A, Int4A  (16-byte aligned)
+//
+// Boolean Vectors:
+//     Bool2, Bool3, Bool4
+//     Bool2A, Bool3A, Bool4A  (!6-byte aligned)
+//
+// Matrices:
+//     Float3x3, Float4x3, Float4x4
+//     Float4x3A, Float4x4A  (16-byte aligned)
+//
+// The library is modeled after Unity and WPF's, and is built on top of the XM** APIs provided by DirectX.
+// Vector types are templatized as well, so Float3 == Vector<float,3> and Float2A == Vector<float,2,true>
 
-/////////////////////////////
-/// Library of common math types used by EVE and EVE-based applications.
-/// Types include:
-///
-/// Floating-point vectors: 
-///     Float2, Float3, Float4
-///     Float2A, Float3A, Float4A  (16-byte aligned)
-///
-/// Integer Vectors:
-///     Int2, Int3, Int4
-///     Int2A, Int3A, Int4A  (16-byte aligned)
-///
-/// Boolean Vectors:
-///     Bool2, Bool3, Bool4
-///     Bool2A, Bool3A, Bool4A  (!6-byte aligned)
-///
-/// Matrices:
-///     Float3x3, Float4x3, Float4x4
-///     Float4x3A, Float4x4A  (16-byte aligned)
-///
-/// The library is modeled after Unity and WPF's, and is built on top of the XM** APIs provided by DirectX.
-/// Vector types are templatized as well, so Float3 == Vector<float,3> and Float2A == Vector<float,2,true>
-////////////////////////////////////////////
+#include <DirectXMath.h>
 
 namespace CS
 {

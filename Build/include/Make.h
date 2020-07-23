@@ -2,7 +2,7 @@
 
 // Make.h is modified from Microsoft's implementation of Make for WRL.
 
-#include "weak_ptr.h"
+#include "WeakReference.h"
 #include <unordered_map>
 
 namespace CS

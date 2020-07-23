@@ -17,7 +17,7 @@
 		template<> struct Identifier<T> : public DeclaredIdentifier<T> { }; } }
 
 // Binds a UUID to a template type.
-// Must be used withing the EVE namespace.
+// Must be used withing the CS namespace.
 // N - The number of template arguments the template type has
 // TT - the template type
 // IDSTR - The UUID string, same as you'd pass to __declspec(uuid())
