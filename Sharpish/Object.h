@@ -13,7 +13,6 @@ namespace CS
 	{
 	};
 
-#if SUPPORTED_CPP0X
 	template<typename BaseType = IWeakReferenceSource2, typename... Implements>
 	class ComType : public ComEntry<BaseType, Implements...>, public ComTypeBase
 	{
@@ -22,16 +21,6 @@ namespace CS
 		typedef ComEntry<BaseType, Implements...> Base;
 	public:
 		typedef ComType<BaseType, Implements...> Discoverable;
-#else
-	template<typename BaseType = IWeakReferenceSource2, typename I1 = _Null, typename I2 = _Null, typename I3 = _Null, typename I4 = _Null, typename I5 = _Null>
-	class ComType : public ComEntry<BaseType, I1, I2, I3, I4, I5>, public ComTypeBase
-	{
-		typedef ComDiscovery<BaseType, I1, I2, I3, I4, I5> DiscoverableBase;
-	protected:
-		typedef ComEntry<BaseType, I1, I2, I3, I4, I5> Base;
-	public:
-		typedef ComType<BaseType, I1, I2, I3, I4, I5> Discoverable;
-#endif
 
 		//private:
 		//	void* operator new(size_t) throw()
@@ -65,8 +54,6 @@ namespace CS
 
 		virtual ~ComType() { _weakRef->SetUnknown(nullptr); _weakRef->Release(); _weakRef = nullptr; }
 
-#if (SUPPORTED_CPP0X != 0)
-
 		template<typename tSomething, typename ... tParams>
 		ComType(tSomething&& first, tParams && ... theParams)
 			: Base(std::forward<tSomething>(first), std::forward<tParams>(theParams)...)
@@ -77,60 +64,6 @@ namespace CS
 		{
 			_weakRef->SetUnknown(reinterpret_cast<IUnknown*>(this));
 		}
-
-#else
-
-		template<typename tParam1>
-		ComType(tParam1 theParam1)
-			: Base(theParam1)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{
-			_weakRef->SetUnknown(reinterpret_cast<IUnknown*>(this));
-		}
-
-		template<typename tParam1, typename tParam2>
-		ComType(tParam1 theParam1, tParam2 theParam2)
-			: Base(theParam1, theParam2)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{
-			_weakRef->SetUnknown(reinterpret_cast<IUnknown*>(this));
-		}
-
-		template<typename tParam1, typename tParam2, typename tParam3>
-		ComType(tParam1 theParam1, tParam2 theParam2, tParam3 theParam3)
-			: Base(theParam1, theParam2, theParam3)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{
-			_weakRef->SetUnknown(reinterpret_cast<IUnknown*>(this));
-		}
-
-		template<typename tParam1, typename tParam2, typename tParam3, typename tParam4>
-		ComType(tParam1 theParam1, tParam2 theParam2, tParam3 theParam3, tParam4 theParam4)
-			: Base(theParam1, theParam2, theParam3, theParam4)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{
-			_weakRef->SetUnknown(reinterpret_cast<IUnknown*>(this));
-		}
-
-		template<typename tParam1, typename tParam2, typename tParam3, typename tParam4, typename tParam5>
-		ComType(tParam1 theParam1, tParam2 theParam2, tParam3 theParam3, tParam4 theParam4, tParam5 theParam5)
-			: Base(theParam1, theParam2, theParam3, theParam4, theParam5)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{
-			_weakRef->SetUnknown(reinterpret_cast<IUnknown*>(this));
-		}
-
-#endif	// (SUPPORTED_CPP0X != 0)
 
 
 	public:
@@ -224,13 +157,13 @@ namespace CS
 
 	namespace Details
 	{
-		std::vector<void(*)()>& RSI(void(*si)());
+		//std::vector<void(*)()>& RSI(void(*si)());
 
-		template< void(*A)(), void(*B)() >
-		struct SameFunc { static const bool value = false; };
+		//template< void(*A)(), void(*B)() >
+		//struct SameFunc { static const bool value = false; };
 
-		template<void(*A)()>
-		struct SameFunc<A, A> { static const bool value = true; };
+		//template<void(*A)()>
+		//struct SameFunc<A, A> { static const bool value = true; };
 
 		template< typename T>
 		class HasStaticInitializer
@@ -261,8 +194,8 @@ namespace CS
 			typedef decltype(test<T>(0, 0)) type;
 
 		public:
-			static const bool value = SameFunc<&T::StaticInit, &T::Base::StaticInit>::value; // type::value;
-			static bool isInitialized;
+			//static const bool value = SameFunc<&T::StaticInit, &T::Base::StaticInit>::value; // type::value;
+			//static bool isInitialized;
 		};
 
 	}
@@ -301,7 +234,6 @@ namespace CS
 	 *
 	 * 
 	 */
-#if SUPPORTED_CPP0X
 
 	template<typename Class, typename BaseClass = ComType<>, typename... Implements>
 	class ComObject : public BaseClass, public Implements...
@@ -313,18 +245,6 @@ namespace CS
 	protected:
 		typedef ComObject<Class, BaseClass, Implements...> Base;
 
-#else
-
-	template<typename Class, typename CBase = ComType<>, typename I1 = _Null, typename I2 = _Null, typename I3 = _Null, typename I4 = _Null, typename I5 = _Null>
-	class ComObject : public ComEntry<CBase, I1, I2, I3, I4, I5>
-	{
-		typedef ComDiscovery<CBase, I1, I2, I3, I4, I5> DiscoverableBase;
-		typedef ComEntry<CBase, I1, I2, I3, I4, I5> BaseClass;
-	protected:
-		typedef ComObject<Class, CBase, I1, I2, I3, I4, I5> Base;
-
-#endif
-
 	public:
 		typedef Base Discoverable;
 		typedef Class Interface;
@@ -332,10 +252,6 @@ namespace CS
 #ifdef ENABLE_MEMORY_DEBUGGING
 		bool DebugWatch;
 #endif
-
-		//static void StaticInit() { }
-
-#if (SUPPORTED_CPP0X != 0)
 
 		ComObject()
 #ifdef ENABLE_MEMORY_DEBUGGING
@@ -350,56 +266,6 @@ namespace CS
 			, DebugWatch(false)
 #endif
 		{ }
-
-#else
-
-		ComObject()
-#ifdef ENABLE_MEMORY_DEBUGGING
-			: DebugWatch(false)
-#endif
-		{ }
-
-		template<typename tParam1>
-		ComObject(tParam1 theParam1)
-			: BaseClass(theParam1)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{ }
-
-		template<typename tParam1, typename tParam2>
-		ComObject(tParam1 theParam1, tParam2 theParam2)
-			: BaseClass(theParam1, theParam2)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{ }
-
-		template<typename tParam1, typename tParam2, typename tParam3>
-		ComObject(tParam1 theParam1, tParam2 theParam2, tParam3 theParam3)
-			: BaseClass(theParam1, theParam2, theParam3)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{ }
-
-		template<typename tParam1, typename tParam2, typename tParam3, typename tParam4>
-		ComObject(tParam1 theParam1, tParam2 theParam2, tParam3 theParam3, tParam4 theParam4)
-			: BaseClass(theParam1, theParam2, theParam3, theParam4)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{ }
-
-		template<typename tParam1, typename tParam2, typename tParam3, typename tParam4, typename tParam5>
-		ComObject(tParam1 theParam1, tParam2 theParam2, tParam3 theParam3, tParam4 theParam4, tParam5 theParam5)
-			: BaseClass(theParam1, theParam2, theParam3, theParam4, theParam5)
-#ifdef ENABLE_MEMORY_DEBUGGING
-			, DebugWatch(false)
-#endif
-		{ }
-
-#endif	// (SUPPORTED_CPP0X != 0)
 
 	public:
 
@@ -549,5 +415,5 @@ namespace CS
 
 	}
 
-template<class T>
-__declspec(selectany) bool CS::Details::HasStaticInitializer<T>::isInitialized = [](void(*si)()) { CS::Details::RSI(si); return false; }(&T::StaticInit);
+//template<class T>
+//__declspec(selectany) bool CS::Details::HasStaticInitializer<T>::isInitialized = [](void(*si)()) { CS::Details::RSI(si); return false; }(&T::StaticInit);

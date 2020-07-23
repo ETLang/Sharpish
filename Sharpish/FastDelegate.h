@@ -767,6 +767,57 @@ namespace CS {
 	template<typename Signature>
 	class Delegate;
 
+	/**
+	 * \brief A callable delegate, analogous to a C# delegate.
+	 * \param Ret Return type of the delegate
+	 * \param Args Delegate argument types
+	 * 
+	 * One important difference between C# delegates and Sharpish delegates is
+	 * that Sharpish delegates do not chain. They only call one closure, or none.
+	 * 
+	 * One other, less important, difference is that calling a null Sharpish
+	 * delegate is valid, acts as a no-op. There's no need to check whether
+	 * the delegate is null before calling it.
+	 * 
+	 * Delegates can be assigned from static functions, lambdas, std::function objects, or
+	 * class member functions, as long as the call signature (sans class scope) matches.
+	 * 
+	 * \note <b>Proper object lifecycle management is important when a delegate is assigned to a
+	 * member function of the object. When a delegate is assigned to a member of a class deriving from CS::ComObject,
+	 * the delegate will maintain a weak reference to the target object, and will only call the function if it 
+	 * verifies that the object is still alive. This behavior is not present for other C++ class types, which
+	 * means that in such cases it is the responsibility of the developer to ensure that target classes are alive
+	 * at the time that delegates are called.</b>
+	 * 
+	 * Following are some examples of how to assign a delegate:
+	 * 
+	 *     class comid("12345678-1234-1234-1234-123456789012") MyClass
+	 *         : public ComObject<MyClass, Object>
+	 *     {
+	 *     public:
+	 *         int DoMyStuff(int x, int y) { return x + y; }
+	 *         static int DoStaticStuff(int a, int b) { return x * y; }
+	 *     }
+	 *     com_ptr<MyClass> myInstance = Make<MyClass>();
+	 *     std::function<int(int,int)> myFunctor = [](int z, int w) { return z - w; }
+	 *
+	 *     int DoGlobalStuff(int u, int v) { return u / v; }
+	 *
+	 *     // Global function
+	 *     Delegate<int(int,int)> delGlobal = &DoGlobalStuff;
+	 *    
+	 *     // Static Member
+	 *     Delegate<int(int,int)> delStatic = &MyClass::DoStaticStuff;
+	 * 
+	 *     // Member 
+	 *     Delegate<int(int,int)> delMember = MemberDelegate(myInstance, DoMyStuff);
+	 * 
+	 *     // Lambda
+	 *     Delegate<int(int,int)> delLambda = [](int x, int y) { return x << y; };
+	 * 
+	 *     // std::function
+	 *     Delegate<int(int,int)> delFunctor = myFunctor;
+	 */
 	template<typename Ret, typename... Args>
 	class Delegate<Ret(Args...)> : public DelegateBase
 	{
@@ -786,47 +837,97 @@ namespace CS {
 		typedef StaticFunctionPtr SafeBoolStruct::*unspecified_bool_type;
 
 	public:
-		// Null construction/assignment
+		
+		/**
+		 * \name Construction/Assignment
+		 * @{
+		 */
+
+		 /** Null constructor */
 		Delegate() { m_Closure.clear(); }
+		/** Null constructor */
 		Delegate(nullptr_t) { m_Closure.clear(); }
+		/** Null assignment */
 		void operator =(nullptr_t) { m_Closure.clear(); }
 
-		// Copy construction/assignment
+		/** Copy constructor */
 		Delegate(const Delegate &x) { m_Closure.CopyFrom(this, x.m_Closure); m_WeakRef = x.m_WeakRef; m_Functor = x.m_Functor; }
+		/** Copy assignment */
 		void operator =(const Delegate &x) { m_Closure.CopyFrom(this, x.m_Closure); m_WeakRef = x.m_WeakRef; m_Functor = x.m_Functor; }
 
-		// Static function construction/assignment.
-		// We convert them into a member function call.
+		/** Move constructor */
+		Delegate(Delegate&& x) { m_Closure.CopyFrom(this, x.m_Closure); m_WeakRef.Swap(x.m_WeakRef); m_Functor.swap(x.m_Functor); }
+		/** Move assignment */
+		void operator =(Delegate&& x) { m_Closure.CopyFrom(this, x.m_Closure); m_WeakRef.Swap(x.m_WeakRef); m_Functor.swap(x.m_Functor); }
+
+		/** Global/Static function constructor */
 		Delegate(Ret(*fp)(Args...)) { bind(fp); }
+		/** Global/Static function assignment */
 		void operator =(Ret(*fp)(Args...)) { bind(fp); }
 
-		// Member function contruction
+		/**
+		 * Member function constructor
+		 * \param pthis Class instance pointer
+		 * \param fp Member function pointer
+		 * 
+		 * Example:
+		 * `Delegate<float(float)>(&myClassInstance, &MyClass::MyFunction);`
+		 * 
+		 * Using this constructor directly can be a bit cumbersome. Consider using the MemberDelegate macro:
+		 * `MemberDelegate(&myClassInstance, MyFunction);`
+		 */
 		template<typename X, typename Y>
 		Delegate(Y *pthis, Ret(X::* fp)(Args...)) { bind(pthis, fp); }
+
+		/**
+		 * Const member function constructor
+		 * \param pthis Class instance pointer
+		 * \param fp Member function pointer
+		 *
+		 * Example:
+		 * `Delegate<float(float)>(&myClassInstance, &MyClass::MyFunction);`
+		 *
+		 * Using this constructor directly can be a bit cumbersome. Consider using the MemberDelegate macro:
+		 * `MemberDelegate(&myClassInstance, MyFunction);`
+		 */
 		template<typename X, typename Y>
 		Delegate(const Y *pthis, Ret(X::* fp)(Args...) const) { bind(pthis, fp); }
 
-		// Functors construction/assignment.
-		// Need to retain them for the lifetime of the delegate
+		/** Functor constructor */
 		template<typename F, typename = std::enable_if_t<std::is_same_v<Ret(Args...), signature_of<F>>>>
 		Delegate(const F& functor) { stlbind(functor, m_Closure); }
+
+		/** Functor assignment */
 		template<typename F, typename = std::enable_if_t<std::is_same_v<Ret(Args...), signature_of<F>>>>
 		void operator =(const F& functor) { stlbind(functor, m_Closure); }
 
-		// Comparison
+		/** @} */
+
+		/** \name Comparison
+		  * @{
+		  */
+
+		/** Compare two delegates */
 		bool operator ==(const Delegate &x) const { return (m_Functor && x.m_Functor) ? (*m_Functor == *x.m_Functor) : m_Closure.IsEqual(x.m_Closure); }
 		bool operator !=(const Delegate &x) const { return !(*this == x); }
 		bool operator <(const Delegate &x) const { return (m_Functor && x.m_Functor) ? (*m_Functor == *x.m_Functor) : m_Closure.IsLess(x.m_Closure); }
 		bool operator >(const Delegate &x) const { return (x < *this); }
 
+		/** Clean convert to bool */
 		operator unspecified_bool_type() const { return empty() ? 0 : &SafeBoolStruct::m_nonzero; }
-		// necessary to allow ==0 to work despite the safe_bool idiom
+
+		/** Compare to static function */
 		inline bool operator ==(StaticFunctionPtr funcptr) { return m_Closure.IsEqualToStaticFuncPtr(funcptr); }
 		inline bool operator !=(StaticFunctionPtr funcptr) { return !m_Closure.IsEqualToStaticFuncPtr(funcptr); }
-		inline bool operator !() const { return !m_Closure; }
-		inline bool empty() const { return !m_Closure; }
 
-		// Invocation
+		/** Gets whether the delegate is null */
+		inline bool operator !() const { return !m_Closure; }
+
+		/** Gets whether the delegate is null */
+		inline bool empty() const { return !m_Closure; }
+		/** @} */
+
+		/** \brief Invocation overload */
 		Ret operator() (Args...args) const
 		{
 			com_ptr<IObject> retainer;
@@ -879,6 +980,11 @@ namespace CS {
 		return Delegate<signature_of<F>>(instance, func);
 	}
 
+	template<typename T, typename F>
+	Delegate<signature_of<F>> MakeDelegate(com_ptr<T> instance, F func)
+	{
+		return Delegate<signature_of<F>>(instance.Get(), func);
+	}
 } // namespace CS
 
 IS_GENERIC_VALUETYPE(1, ::CS::Delegate, "32053C30-9B36-4DBA-A1B2-AF1F7608B66D");

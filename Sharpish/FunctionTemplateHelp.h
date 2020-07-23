@@ -105,6 +105,11 @@ namespace CS
         };
     }
 
+    /**
+     * \brief Given a callable type, returns the delegate-compatible call signature of that type.
+     * 
+     * The call signature removes class scope, calling convention, and pointer/reference characteristics.
+     */
     template<typename T> using signature_of = typename Details::SignatureTraits<T>::Sig;
     template<typename A, typename B> constexpr bool signature_match = std::is_same_v<signature_of<A>, signature_of<B>>;
     template<typename T> constexpr bool is_signature = Details::IsSignature<T>::value;
