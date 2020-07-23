@@ -24,7 +24,7 @@ Sharpish uses the CS:: namespace.
 TODO
 
 # Guide
-TODO
+See the latest [API Documentation](https://codedocs.xyz/ETLang/Sharpish/).
 
 # License
  Sharpish is licensed under the MIT license.
