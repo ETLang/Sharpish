@@ -83,7 +83,11 @@ namespace CS
 {
     //using namespace std;
     using namespace DirectX;
+#if !defined(_MSVC_LANG) || _MSVC_LANG < 201703L
     typedef unsigned char byte;
+#else
+    using byte = std::byte;
+#endif
     using string = std::string;
 }
 

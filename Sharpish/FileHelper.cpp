@@ -5,12 +5,12 @@
 using namespace CS;
 using namespace std;
 
-vector<byte> Help::File::ReadWhole(wstring path)
+vector<CS::byte> Help::File::ReadWhole(wstring path)
 {
 	return ReadWhole(String::WToS(path));
 }
 
-vector<byte> Help::File::ReadWhole(string path)
+vector<CS::byte> Help::File::ReadWhole(string path)
 {
 	ifstream fs;
 	fs.unsetf(ios::skipws);
