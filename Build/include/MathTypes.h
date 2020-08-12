@@ -1515,7 +1515,7 @@ namespace CS
 		inline static Float4x4 __vectorcall RotationNormalAxisAngle(const Float3A& normalAxis, float angle) { return XMMatrixRotationNormal(normalAxis, angle); }
 		inline static Float4x4 __vectorcall RotationAxisAngle(const Float3A& axis, float angle) { return XMMatrixRotationAxis(axis, angle); }
 		inline static Float4x4 __vectorcall RotationQuaternion(const QuaternionA& q) { return XMMatrixRotationQuaternion(q); }
-		inline static Float4x4 __vectorcall Transform2D(const Float2A& scale, const Float2A& rotationCenter, float rotationAngle, const Float2A &position) { return XMMatrixAffineTransformation2D(scale, rotationCenter, rotationAngle, position); }
+		inline static Float4x4 __vectorcall Transform2D(const Float2A& scale, const Float2A& rotationCenter, float rotationAngle, const Float2A& position) { return XMMatrixAffineTransformation2D(scale, rotationCenter, rotationAngle, position); }
 		inline static Float4x4 __vectorcall Transform(const Float3A& scale, const Float3A& rotationCenter, const QuaternionA& rotation, const Float3A& position) { return XMMatrixAffineTransformation(scale, rotationCenter, rotation, position); }
 		inline static Float4x4 __vectorcall Reflection(const Float4A& reflectionPlane) { return XMMatrixReflect(reflectionPlane); }
 		inline static Float4x4 __vectorcall Shadow(const Float3A& lightPosition, const Float4A& shadowPlane) { return XMMatrixShadow(shadowPlane, lightPosition); }
@@ -1751,24 +1751,24 @@ namespace CS
 
 		bool Decompose(Float3* outPosition, Quaternion* outOrientation, Float3* outScale, Float4x3A* outResidual = nullptr) const;
 
-		inline static Float4x3 __vectorcall Translation(float x, float y, float z) { return XMMatrixTranslation(x, y, z); }
-		inline static Float4x3 __vectorcall Translation(const Float3A& v) { return XMMatrixTranslationFromVector(v); }
-		inline static Float4x3 __vectorcall Scaling(float x, float y, float z) { return XMMatrixScaling(x, y, z); }
-		inline static Float4x3 __vectorcall Scaling(const Float3A& v) { return XMMatrixScalingFromVector(v); }
-		inline static Float4x3 __vectorcall RotationX(float angle) { return XMMatrixRotationX(angle); }
-		inline static Float4x3 __vectorcall RotationY(float angle) { return XMMatrixRotationY(angle); }
-		inline static Float4x3 __vectorcall RotationZ(float angle) { return XMMatrixRotationZ(angle); }
-		inline static Float4x3 __vectorcall RotationPitchYawRoll(float pitch, float yaw, float roll) { return XMMatrixRotationRollPitchYaw(pitch, yaw, roll); }
-		inline static Float4x3 __vectorcall RotationPitchYawRoll(const Float3A& v) { return XMMatrixRotationRollPitchYawFromVector(v); }
-		inline static Float4x3 __vectorcall RotationNormalAxisAngle(const Float3A& normalAxis, float angle) { return XMMatrixRotationNormal(normalAxis, angle); }
-		inline static Float4x3 __vectorcall RotationAxisAngle(const Float3A& axis, float angle) { return XMMatrixRotationAxis(axis, angle); }
-		inline static Float4x3 __vectorcall RotationQuaternion(const QuaternionA& q) { return XMMatrixRotationQuaternion(q); }
-		inline static Float4x3 __vectorcall Transform2D(const Float2A& scale, const Float2A& rotationCenter, float rotationAngle, const Float2A& position) { return XMMatrixAffineTransformation2D(scale, rotationCenter, rotationAngle, position); }
-		inline static Float4x3 __vectorcall Transform(const Float3A& scale, const Float3A& rotationCenter, const QuaternionA& rotation, const Float3A& position) { return XMMatrixAffineTransformation(scale, rotationCenter, rotation, position); }
-		inline static Float4x3 __vectorcall Reflection(const Float4A& reflectionPlane) { return XMMatrixReflect(reflectionPlane); }
-		inline static Float4x3 __vectorcall Shadow(const Float3A& lightPosition, const Float4A& shadowPlane) { return XMMatrixShadow(shadowPlane, lightPosition); }
-		inline static Float4x3 __vectorcall LookAt(const Float3A& eyePosition, const Float3A& focusPt, const Float3A& up) { return XMMatrixLookAtLH(eyePosition, focusPt, up); }
-		inline static Float4x3 __vectorcall LookTo(const Float3A& eyePosition, const Float3A& eyeDirection, const Float3A& up) { return XMMatrixLookToLH(eyePosition, eyeDirection, up); }
+		inline static Float4x3 __vectorcall Translation(float x, float y, float z) { return Float4x3(XMMatrixTranslation(x, y, z)); }
+		inline static Float4x3 __vectorcall Translation(const Float3A& v) { return Float4x3(XMMatrixTranslationFromVector(v)); }
+		inline static Float4x3 __vectorcall Scaling(float x, float y, float z) { return Float4x3(XMMatrixScaling(x, y, z)); }
+		inline static Float4x3 __vectorcall Scaling(const Float3A& v) { return Float4x3(XMMatrixScalingFromVector(v)); }
+		inline static Float4x3 __vectorcall RotationX(float angle) { return Float4x3(XMMatrixRotationX(angle)); }
+		inline static Float4x3 __vectorcall RotationY(float angle) { return Float4x3(XMMatrixRotationY(angle)); }
+		inline static Float4x3 __vectorcall RotationZ(float angle) { return Float4x3(XMMatrixRotationZ(angle)); }
+		inline static Float4x3 __vectorcall RotationPitchYawRoll(float pitch, float yaw, float roll) { return Float4x3(XMMatrixRotationRollPitchYaw(pitch, yaw, roll)); }
+		inline static Float4x3 __vectorcall RotationPitchYawRoll(const Float3A& v) { return Float4x3(XMMatrixRotationRollPitchYawFromVector(v)); }
+		inline static Float4x3 __vectorcall RotationNormalAxisAngle(const Float3A& normalAxis, float angle) { return Float4x3(XMMatrixRotationNormal(normalAxis, angle)); }
+		inline static Float4x3 __vectorcall RotationAxisAngle(const Float3A& axis, float angle) { return Float4x3(XMMatrixRotationAxis(axis, angle)); }
+		inline static Float4x3 __vectorcall RotationQuaternion(const QuaternionA& q) { return Float4x3(XMMatrixRotationQuaternion(q)); }
+		inline static Float4x3 __vectorcall Transform2D(const Float2A& scale, const Float2A& rotationCenter, float rotationAngle, const Float2A& position) { return Float4x3(XMMatrixAffineTransformation2D(scale, rotationCenter, rotationAngle, position)); }
+		inline static Float4x3 __vectorcall Transform(const Float3A& scale, const Float3A& rotationCenter, const QuaternionA& rotation, const Float3A& position) { return Float4x3(XMMatrixAffineTransformation(scale, rotationCenter, rotation, position)); }
+		inline static Float4x3 __vectorcall Reflection(const Float4A& reflectionPlane) { return Float4x3(XMMatrixReflect(reflectionPlane)); }
+		inline static Float4x3 __vectorcall Shadow(const Float3A& lightPosition, const Float4A& shadowPlane) { return Float4x3(XMMatrixShadow(shadowPlane, lightPosition)); }
+		inline static Float4x3 __vectorcall LookAt(const Float3A& eyePosition, const Float3A& focusPt, const Float3A& up) { return Float4x3(XMMatrixLookAtLH(eyePosition, focusPt, up)); }
+		inline static Float4x3 __vectorcall LookTo(const Float3A& eyePosition, const Float3A& eyeDirection, const Float3A& up) { return Float4x3(XMMatrixLookToLH(eyePosition, eyeDirection, up)); }
 	};
 
 	inline Float4x3A __vectorcall operator *(float scalar, const Float4x4& m) { return (XMMATRIX)m * scalar; }
@@ -1783,7 +1783,7 @@ namespace CS
 			float m10, float m11, float m12,
 			float m20, float m21, float m22) : DirectX::XMFLOAT3X3(m00, m01, m02, m10, m11, m12, m20, m21, m22) { }
 		Float3x3(const XMMATRIX& m) { XMStoreFloat3x3(this, m); }
-		explicit Float3x3(const float *pArray) : DirectX::XMFLOAT3X3(pArray) { }
+		explicit Float3x3(const float* pArray) : DirectX::XMFLOAT3X3(pArray) { }
 
 		//		inline operator XMMATRIX() const { return XMLoadFloat3x3(this); }
 		inline operator Float4x4A() const { return XMLoadFloat3x3(this); }

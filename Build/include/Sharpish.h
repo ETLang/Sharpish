@@ -2,9 +2,9 @@
 
 /**
  * \mainpage
- * 
+ *
  * \section Welcome
- * 
+ *
  * Sharpish is a C++ library that provides a variety of features that mimic constructs that are
  * ordinarily only found in C#. This allows someone familiar with C# to more easily work with C++
  * without having to rethink well-established solutions to common problems.
@@ -20,7 +20,7 @@
  * static functions, std::function objects, and lambda expressions. This is a heavily modified and
  * enhanced version of Don Clugston's ["Fastest Possible C++ Delegate"]
  * (https://www.codeproject.com/Articles/7150/Member-Function-Pointers-and-the-Fastest-Possible) on CodeProject.
- * * **Events** - Builds upon the Delegate construct to implement C++ events that are highly analogous 
+ * * **Events** - Builds upon the Delegate construct to implement C++ events that are highly analogous
  * to C# events.
  * * **Array<T>** - An array class that works much like any C# array. It can either manage its own
  * allocation, or use preallocated space, and carries length information with it.
@@ -33,15 +33,15 @@
  * Float4x3, Float4x4, etc.
  *
  * \section DnA Dependencies and Attribution
- * 
+ *
  * Original FastDelegate Copyright (c) 2004 Don Clugston
  * [http://www.codeproject.com/Articles/7150/Member-Function-Pointers-and-the-Fastest-Possible]
- * 
+ *
  * Original COM Interface Template Implementation Copyright (c) 2011, KO Software (official@ko-sw.com)
  * [https://www.codeproject.com/Articles/249257/Implementing-COM-Interfaces-with-Cplusplus0x-Varia]
  *
  * \section Lic MIT Licensing
- * 
+ *
  * Copyright (c) 2020 Evan Lang
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -86,7 +86,8 @@ namespace CS
 #if !defined(_MSVC_LANG) || _MSVC_LANG < 201703L
     typedef unsigned char byte;
 #else
-    using byte = std::byte;
+    typedef unsigned char byte;
+    //using byte = std::byte;
 #endif
     using string = std::string;
 }
@@ -114,9 +115,9 @@ namespace CS
 template<class T, size_t Size>
 __forceinline size_t ArrayLength(const T(&)[Size]) { return Size; }
 
-template<class T> T* malloc_array(size_t arrLength) { return (T*)malloc(sizeof(T)* arrLength); }
-template<class T> T* _aligned_malloc_array(size_t arrLength, size_t align) { return (T*)_aligned_malloc(sizeof(T)* arrLength, align); }
-template<class T> T* _aligned_malloc_array(size_t arrLength) { return (T*)_aligned_malloc(sizeof(T)* arrLength, __alignof(T)); }
+template<class T> T* malloc_array(size_t arrLength) { return (T*)malloc(sizeof(T) * arrLength); }
+template<class T> T* _aligned_malloc_array(size_t arrLength, size_t align) { return (T*)_aligned_malloc(sizeof(T) * arrLength, align); }
+template<class T> T* _aligned_malloc_array(size_t arrLength) { return (T*)_aligned_malloc(sizeof(T) * arrLength, __alignof(T)); }
 template<class T> void zero(T&& item) { memset((void*)&item, 0, sizeof(T)); }
 template<class T, int TSize> void zero(T itemarray[TSize]) { memset(itemarray, 0, sizeof(T) * TSize); }
 template<class T> void zero(T* itemarray, int elements) { memset(itemarray, 0, sizeof(T) * elements); }
@@ -194,6 +195,7 @@ T Def() { static T _value; return _value; }
 
 // runtime_cast casts an object implementing IObject at runtime.
 // Unlike QueryInterface, IObject::CastTo doesn't increase the reference count.
+
 template<typename T, typename U>
 typename T* runtime_cast(U* ptr) { return ptr ? (T*)ptr->CastTo((CS::Details::Identifier<T>::UUIDOf())) : (T*)nullptr; }
 

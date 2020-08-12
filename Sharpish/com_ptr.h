@@ -43,7 +43,7 @@ namespace CS {
             // com_ptr does not require these methods to be virtual.
             // When com_ptr is used with a class without a virtual table, marking the functions
             // as virtual in this class adds unnecessary overhead.
-            HRESULT __stdcall QueryInterface(REFIID riid, _COM_Outptr_ void **ppvObject);
+            HRESULT __stdcall QueryInterface(REFIID riid, _COM_Outptr_ void** ppvObject);
             ULONG __stdcall AddRef();
             ULONG __stdcall Release();
             void* __stdcall CastTo(REFIID riid);
@@ -67,9 +67,9 @@ namespace CS {
         public:
             typedef typename T::InterfaceType InterfaceType;
 
-            operator IObject**() const throw()
+            operator IObject** () const throw()
             {
-                static_assert(__is_base_of(IObject, InterfaceType), "Invalid cast: InterfaceType does not derive from IObject");
+                static_assert(std::is_base_of_v<IObject, InterfaceType>, "Invalid cast: InterfaceType does not derive from IObject");
                 return reinterpret_cast<IObject**>(_ptr->ReleaseAndGetAddressOf());
             }
 
@@ -87,41 +87,41 @@ namespace CS {
             }
 
             // Conversion operators
-            operator void**() const throw()
+            operator void** () const throw()
             {
-                return reinterpret_cast<void**>(_ptr->ReleaseAndGetAddressOf());
+                return reinterpret_cast<void**>(ComPtrRefBase<T>::_ptr->ReleaseAndGetAddressOf());
             }
 
             // This is our operator com_ptr<U> (or the latest derived class from com_ptr (e.g. weak_ref))
-            operator T*() throw()
+            operator T* () throw()
             {
-                *_ptr = nullptr;
-                return _ptr;
+                *ComPtrRefBase<T>::_ptr = nullptr;
+                return ComPtrRefBase<T>::_ptr;
             }
 
             // We define operator InterfaceType**() here instead of on ComPtrRefBase<T>, since
             // if InterfaceType is IUnknown or IInspectable, having it on the base will colide.
-            operator InterfaceType**() throw()
+            operator ComPtrRefBase<T>::InterfaceType** () throw()
             {
-                return _ptr->ReleaseAndGetAddressOf();
+                return ComPtrRefBase<T>::_ptr->ReleaseAndGetAddressOf();
             }
 
             // This is used for IID_PPV_ARGS in order to do __uuidof(**(ppType)).
             // It does not need to clear  _ptr at this point, it is done at IID_PPV_ARGS_Helper(StoredRef&) later in this file.
-            InterfaceType* operator *() throw()
+            ComPtrRefBase<T>::InterfaceType* operator *() throw()
             {
-                return _ptr->Get();
+                return ComPtrRefBase<T>::_ptr->Get();
             }
 
             // Explicit functions
-            InterfaceType* const * GetAddressOf() const throw()
+            ComPtrRefBase<T>::InterfaceType* const* GetAddressOf() const throw()
             {
-                return _ptr->GetAddressOf();
+                return ComPtrRefBase<T>::_ptr->GetAddressOf();
             }
 
-            InterfaceType** ReleaseAndGetAddressOf() throw()
+            ComPtrRefBase<T>::InterfaceType** ReleaseAndGetAddressOf() throw()
             {
-                return _ptr->ReleaseAndGetAddressOf();
+                return ComPtrRefBase<T>::_ptr->ReleaseAndGetAddressOf();
             }
         };
 
@@ -132,10 +132,10 @@ namespace CS {
     /**
      * \brief Smart pointer reference to a reference-counted object
      * \param T Type of object being referenced. Must implement IUnknown.
-     * 
-     * A smart pointer works like a pointer, with the added feature of 
+     *
+     * A smart pointer works like a pointer, with the added feature of
      * automatically calling AddRef and Release on the object it references.
-     * 
+     *
      * This implementation is largely borrowed from Microsoft's [ComPtr]
      * (https://docs.microsoft.com/en-us/cpp/cppcx/wrl/comptr-class?view=vs-2019)
      * class to be made portable.
@@ -147,7 +147,7 @@ namespace CS {
         typedef T InterfaceType;
 
     protected:
-        InterfaceType *_ptr;
+        InterfaceType* _ptr;
         template<class U> friend class com_ptr;
 
         void InternalAddRef() const throw()
@@ -180,11 +180,11 @@ namespace CS {
 
         /**
          * Constructs from a raw pointer.
-         * 
+         *
          * \param other A raw pointer (must be castable to T)
          */
         template<class U>
-        com_ptr(_In_opt_ U *other) throw() : _ptr(other)
+        com_ptr(_In_opt_ U* other) throw() : _ptr(other)
         {
             InternalAddRef();
         }
@@ -197,14 +197,14 @@ namespace CS {
 
         /** Copy constructor where U is castable to T. */
         template<class U>
-        com_ptr(const com_ptr<U> &other, typename std::enable_if<std::is_convertible<U*, T*>::value, void *>::type * = 0) throw() :
+        com_ptr(const com_ptr<U>& other, typename std::enable_if<std::is_convertible<U*, T*>::value, void*>::type* = 0) throw() :
             _ptr(other._ptr)
         {
             InternalAddRef();
         }
 
         /** Move constructor. */
-        com_ptr(_Inout_ com_ptr &&other) throw() : _ptr(nullptr)
+        com_ptr(_Inout_ com_ptr&& other) throw() : _ptr(nullptr)
         {
             if (this != reinterpret_cast<com_ptr*>(&reinterpret_cast<byte&>(other)))
             {
@@ -214,7 +214,7 @@ namespace CS {
 
         /** Move constructor where U is castable to T. */
         template<class U>
-        com_ptr(_Inout_ com_ptr<U>&& other, typename std::enable_if<std::is_convertible<U*, T*>::value, void *>::type * = 0) throw() :
+        com_ptr(_Inout_ com_ptr<U>&& other, typename std::enable_if<std::is_convertible<U*, T*>::value, void*>::type* = 0) throw() :
             _ptr(other._ptr)
         {
             other._ptr = nullptr;
@@ -235,7 +235,7 @@ namespace CS {
         }
 
         /** Assign from raw pointer. */
-        com_ptr& operator=(_In_opt_ T *other) throw()
+        com_ptr& operator=(_In_opt_ T* other) throw()
         {
             if (_ptr != other)
             {
@@ -246,18 +246,18 @@ namespace CS {
 
         /**
          * \brief Assign from raw pointer, where U is castable to T.
-         * 
+         *
          * \param U The other pointer type (must be castable to T)
          */
         template <typename U>
-        com_ptr& operator=(_In_opt_ U *other) throw()
+        com_ptr& operator=(_In_opt_ U* other) throw()
         {
             com_ptr(other).Swap(*this);
             return *this;
         }
 
         /** Assign from com_ptr. */
-        com_ptr& operator=(const com_ptr &other) throw()
+        com_ptr& operator=(const com_ptr& other) throw()
         {
             if (_ptr != other._ptr)
             {
@@ -268,7 +268,7 @@ namespace CS {
 
         /**
          * \brief Assign from com_ptr, where U is castable to T.
-         * 
+         *
          * \param U The other pointer type (must be castable to T)
          */
         template<class U>
@@ -279,7 +279,7 @@ namespace CS {
         }
 
         /** R-Value Assign from com_ptr. */
-        com_ptr& operator=(_Inout_ com_ptr &&other) throw()
+        com_ptr& operator=(_Inout_ com_ptr&& other) throw()
         {
             com_ptr(static_cast<com_ptr&&>(other)).Swap(*this);
             return *this;
@@ -287,7 +287,7 @@ namespace CS {
 
         /**
          * \brief R-Value Assign from com_ptr, where U is castable to T.
-         * 
+         *
          * \param U The other pointer type (must be castable to T)
          */
         template<class U>
@@ -306,12 +306,12 @@ namespace CS {
 #pragma endregion
 
 #pragma region modifiers
-        
+
         /**
          * \brief R-Value swap two pointers.
-         * 
+         *
          * Swapping can save performance by avoiding redundant AddRef/Release calls.
-         * 
+         *
          * \param r Other pointer being swapped
          */
         void Swap(_Inout_ com_ptr&& r) throw()
@@ -323,7 +323,7 @@ namespace CS {
 
         /**
          * \brief Swap two pointers.
-         * 
+         *
          * Swapping can save performance by avoiding redundant AddRef/Release calls.
          *
          * \param r Other pointer being swapped
@@ -388,7 +388,7 @@ namespace CS {
 
         /**
          * \brief Disassociates this ComPtr object from the interface that it represents.
-         * 
+         *
          * \return The disassociated pointer
          */
         T* Detach() throw()
@@ -400,7 +400,7 @@ namespace CS {
 
         /**
          * \brief Associates this ComPtr with the interface type specified by the current template type parameter.
-         * 
+         *
          * \param other The pointer to associate
          */
         void Attach(_In_opt_ InterfaceType* other) throw()
@@ -438,7 +438,7 @@ namespace CS {
 
         /**
          * \brief Returns a ComPtr object that represents the interface identified by the specified template parameter.
-         * 
+         *
          * \param p [Out] The returned pointer
          * \param U The interface type to query for
          * \return S_OK if successful; otherwise an error code.
@@ -564,7 +564,7 @@ namespace CS {
         HRESULT As(Details::StoredRef<com_ptr<U>> ptr) throw()
         {
             static_assert(!std::is_same<Ext::IWeakReference, U>::value, "Details:: cannot resolve Details:: object.");
-            static_assert(std::is_base_of<IObject, U>::value, "weak_ref::As() can only be used on types derived from IObject");
+            static_assert(std::is_base_of_v<IObject, U>, "weak_ref::As() can only be used on types derived from IObject");
 
             return InternalResolve(_uuidof(U), ptr);
         }
@@ -572,8 +572,8 @@ namespace CS {
         template<typename U>
         HRESULT As(Details::StoredRef<com_ptr<U>> ptr) const throw()
         {
-            static_assert(!Details::IsSame<Ext::IWeakReference, U>::value, "Details:: cannot resolve Details:: object.");
-            static_assert(__is_base_of(IObject, U), "weak_ref::As() can only be used on types derived from IObject");
+            static_assert(!std::is_same<Ext::IWeakReference, U>::value, "Details:: cannot resolve Details:: object.");
+            static_assert(std::is_base_of_v<IObject, U>, "weak_ref::As() can only be used on types derived from IObject");
 
             return InternalResolve(_uuidof(U), ptr);
         }
@@ -581,8 +581,8 @@ namespace CS {
         template<typename U>
         HRESULT As(_Out_ com_ptr<U>* ptr) throw()
         {
-            static_assert(!Details::IsSame<Details::Ext::IWeakReference, U>::value, "Details:: cannot resolve Details:: object.");
-            static_assert(__is_base_of(IInspectable, U), "weak_ref::As() can only be used on types derived from IInspectable");
+            static_assert(!std::is_same<Ext::IWeakReference, U>::value, "Details:: cannot resolve Details:: object.");
+            static_assert(std::is_base_of_v<IObject, U>, "weak_ref::As() can only be used on types derived from IInspectable");
 
             return InternalResolve(_uuidof(U), ptr->ReleaseAndGetAddressOf());
         }
@@ -590,8 +590,8 @@ namespace CS {
         template<typename U>
         HRESULT As(_Out_ com_ptr<U>* ptr) const throw()
         {
-            static_assert(!Details::IsSame<Details::Ext::IWeakReference, U>::value, "Details:: cannot resolve Details:: object.");
-            static_assert(__is_base_of(IInspectable, U), "weak_ref::As() can only be used on types derived from IInspectable");
+            static_assert(!std::is_same<Ext::IWeakReference, U>::value, "Details:: cannot resolve Details:: object.");
+            static_assert(std::is_base_of<IObject, U>::value, "weak_ref::As() can only be used on types derived from IObject");
 
             return InternalResolve(_uuidof(U), ptr->ReleaseAndGetAddressOf());
         }
@@ -613,9 +613,9 @@ namespace CS {
         template<typename U>
         HRESULT CopyTo(_Outptr_result_maybenull_ U** ptr) throw()
         {
-            static_assert(__is_base_of(IInspectable, U), "weak_ref::CopyTo() can only be used on types derived from IInspectable");
+            static_assert(std::is_base_of<IObject, U>::value, "weak_ref::CopyTo() can only be used on types derived from IObject");
 
-            return InternalResolve(_uuidof(U), reinterpret_cast<IInspectable**>(ptr));
+            return InternalResolve(_uuidof(U), reinterpret_cast<IObject**>(ptr));
         }
 
         HRESULT CopyTo(_Outptr_result_maybenull_ Ext::IWeakReference** ptr) throw()
@@ -639,13 +639,13 @@ namespace CS {
 
     /**
      * \brief A weak reference to a reference-counted object.
-     * 
+     *
      * Unlike a smart pointer, the weak reference cannot be treated as an analog of a pointer.
      * Call `Resolve()` on a weak reference to get a `com_ptr<T>` reference to the object.
-     * 
+     *
      * If the object has been destroyed, `Resolve()' will return null. Always check that the
      * result of `Resolve()` is not null before using it.
-     * 
+     *
      * \param T The object type being referenced.
      */
     template<class T>
@@ -667,7 +667,7 @@ namespace CS {
 
         /**
          * \brief Constructs from an object.
-         * 
+         *
          * \param ptr Pointer to a live object to get a weak reference of. Must not be null.
          */
         template<class T>
@@ -679,7 +679,7 @@ namespace CS {
 
         /**
          * \brief Constructs from an object.
-         * 
+         *
          * \param U The object pointer type (must be castable to T)
          * \param ptr Pointer to a live object to get a weak reference of. Must not be null.
          */
@@ -713,7 +713,7 @@ namespace CS {
 
         /**
          * \brief Resolve a weak reference to a different type.
-         * 
+         *
          * \param U The interface type to resolve from the object
          * \return A com_ptr to the resolved object, or null if the object has been destroyed or cannot be cast to U.
          */
@@ -736,7 +736,7 @@ namespace CS {
 
         /**
          * \brief Resolve a weak reference.
-         * 
+         *
          * \return A com_ptr to the resolved object, or null if the object has been destroyed.
          */
         com_ptr<T> Resolve() const
@@ -758,7 +758,7 @@ namespace CS {
         }
 
         /** Assign from IWeakReference */
-        weak_ptr& operator=(_In_opt_ Ext::IWeakReference *other) throw()
+        weak_ptr& operator=(_In_opt_ Ext::IWeakReference* other) throw()
         {
             if (_ptr != other)
             {
@@ -775,7 +775,7 @@ namespace CS {
         //}
 
         /** Assign from another weak_ptr */
-        weak_ptr& operator=(const weak_ptr &other) throw()
+        weak_ptr& operator=(const weak_ptr& other) throw()
         {
             if (_ptr != other._ptr)
             {
@@ -786,7 +786,7 @@ namespace CS {
 
         /**
          * \brief Assign from a weak_ptr of a different type
-         * 
+         *
          * \param U Pointer type being assigned from. Must be castable to T.
          */
         template<class U>
@@ -797,7 +797,7 @@ namespace CS {
         }
 
         /** Assign from another weak_ptr */
-        weak_ptr& operator=(_Inout_ weak_ptr &&other) throw()
+        weak_ptr& operator=(_Inout_ weak_ptr&& other) throw()
         {
             weak_ptr(static_cast<weak_ptr&&>(other)).Swap(*this);
             return *this;
@@ -826,8 +826,7 @@ namespace CS {
     template<typename T>
     HRESULT AsWeak(_In_ T* p, _Out_ weak_ref* pWeak) throw()
     {
-        static_assert(!Details::IsSame<Details::, T>::value, "Cannot get Details:: object to Details::.");
-        com_ptr<Details::Source> refSource;
+        com_ptr<Ext::IWeakReferenceSource> refSource;
 
         HRESULT hr = p->QueryInterface(IID_PPV_ARGS(refSource.GetAddressOf()));
         if (FAILED(hr))
@@ -835,7 +834,7 @@ namespace CS {
             return hr;
         }
 
-        com_ptr<Details::> weakref;
+        com_ptr<Ext::IWeakReference> weakref;
         hr = refSource->GetWeakReference(weakref.GetAddressOf());
         if (FAILED(hr))
         {
@@ -850,7 +849,7 @@ namespace CS {
     template<class T, class U>
     bool operator==(const com_ptr<T>& a, const com_ptr<U>& b) throw()
     {
-        static_assert(__is_base_of(T, U) || __is_base_of(U, T), "'T' and 'U' pointers must be comparable");
+        static_assert(std::is_base_of<T, U>::value || std::is_base_of<U, T>::value, "'T' and 'U' pointers must be comparable");
         return a.Get() == b.Get();
     }
 
@@ -869,7 +868,7 @@ namespace CS {
     template<class T, class U>
     bool operator!=(const com_ptr<T>& a, const com_ptr<U>& b) throw()
     {
-        static_assert(__is_base_of(T, U) || __is_base_of(U, T), "'T' and 'U' pointers must be comparable");
+        static_assert(std::is_base_of<T, U>::value || std::is_base_of<U, T>::value, "'T' and 'U' pointers must be comparable");
         return a.Get() != b.Get();
     }
 
@@ -888,7 +887,7 @@ namespace CS {
     template<class T, class U>
     bool operator<(const com_ptr<T>& a, const com_ptr<U>& b) throw()
     {
-        static_assert(__is_base_of(T, U) || __is_base_of(U, T), "'T' and 'U' pointers must be comparable");
+        static_assert(std::is_base_of_v<T, U> || std::is_base_of_v<U, T>, "'T' and 'U' pointers must be comparable");
         return a.Get() < b.Get();
     }
 
@@ -896,7 +895,7 @@ namespace CS {
     template<class T, class U>
     bool operator==(const Details::StoredRef<com_ptr<T>>& a, const Details::StoredRef<com_ptr<U>>& b) throw()
     {
-        static_assert(__is_base_of(T, U) || __is_base_of(U, T), "'T' and 'U' pointers must be comparable");
+        static_assert(std::is_base_of_v<T, U> || std::is_base_of_v<U, T>, "'T' and 'U' pointers must be comparable");
         return a.GetAddressOf() == b.GetAddressOf();
     }
 
@@ -927,7 +926,7 @@ namespace CS {
     template<class T, class U>
     bool operator!=(const Details::StoredRef<com_ptr<T>>& a, const Details::StoredRef<com_ptr<U>>& b) throw()
     {
-        static_assert(__is_base_of(T, U) || __is_base_of(U, T), "'T' and 'U' pointers must be comparable");
+        static_assert(std::is_base_of_v<T, U> || std::is_base_of_v<U, T>, "'T' and 'U' pointers must be comparable");
         return a.GetAddressOf() != b.GetAddressOf();
     }
 
@@ -958,7 +957,7 @@ namespace CS {
     template<class T, class U>
     bool operator<(const Details::StoredRef<com_ptr<T>>& a, const Details::StoredRef<com_ptr<U>>& b) throw()
     {
-        static_assert(__is_base_of(T, U) || __is_base_of(U, T), "'T' and 'U' pointers must be comparable");
+        static_assert(std::is_base_of_v<T, U> || std::is_base_of_v<U, T>, "'T' and 'U' pointers must be comparable");
         return a.GetAddressOf() < b.GetAddressOf();
     }
 
@@ -981,7 +980,7 @@ namespace std
     {
         size_t operator()(CS::weak_ptr<T> const& d) const
         {
-            return (size_t)d.();
+            return (size_t)d.Get();
         }
     };
 }

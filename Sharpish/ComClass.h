@@ -94,6 +94,9 @@ struct hold_uuidof { static GUID __IID; };
 	: Base( std::forward<tParams>(theParams)... ), ## __VA_ARGS__ \
 	{ }
 
+template<typename T, typename _N1>
+struct _ComTraits;
+
 template<typename To, typename From, typename Interface, typename Base,
 	bool ToSame = std::is_same<To, Interface>::value,
 	bool FromSame = std::is_same<From, Interface>::value>
@@ -116,7 +119,7 @@ struct __StandardDisambiguation<To, From, Interface, Base, false, false>
 {
 	static To* Cast(From* obj)
 	{
-		return _ComTraits<Base>::Discoverable::DisambiguationCast<To, Interface>(const_cast<Interface*>(static_cast<const Interface*>(obj)));
+		return _ComTraits<Base>::Discoverable::template DisambiguationCast<To, Interface>(const_cast<Interface*>(static_cast<const Interface*>(obj)));
 	}
 };
 
@@ -128,7 +131,7 @@ struct __StandardDisambiguation<To, From, Interface, Base, false, false>
 
 #define DECLARE_DISAMBIGUATION_CAST_INSTANCE(Discoverable) \
 		template<typename To, typename From> \
-		static To* DisambiguationCast(From* obj) { return Discoverable::DisambiguationCast<To, From>(obj); }
+		static To* DisambiguationCast(From* obj) { return Discoverable::template DisambiguationCast<To, From>(obj); }
 
 template<typename I>
 class DECLSPEC_NOVTABLE ComDiscovery1
@@ -150,10 +153,10 @@ public:
 	}
 
 	template<typename tObject>
-	static HRESULT InternalQueryInterface(REFIID theIID, tObject * theObj, void ** theOut)
+	static HRESULT InternalQueryInterface(REFIID theIID, tObject* theObj, void** theOut)
 	{
 		if (theIID == _uuidof(I))
-			*theOut = _ComTraits<tObject>::Discoverable::DisambiguationCast<I>(theObj);
+			*theOut = _ComTraits<tObject>::Discoverable::template DisambiguationCast<I>(theObj);
 		else
 			return E_NOINTERFACE;
 
@@ -164,7 +167,7 @@ public:
 	static void InternalCast(REFIID id, tObject* obj, void*& out)
 	{
 		if (id == _uuidof(I))
-			out = _ComTraits<tObject>::Discoverable::DisambiguationCast<I>(theObj);
+			out = _ComTraits<tObject>::Discoverable::template DisambiguationCast<I>(obj);
 	}
 };
 
@@ -189,7 +192,7 @@ struct __CompoundDisambiguation<To, From, IA, IB, true, false, Same>
 {
 	static To* Cast(From* obj)
 	{
-		return IA::DisambiguationCast<To>(obj);
+		return IA::template DisambiguationCast<To>(obj);
 	};
 };
 
@@ -198,7 +201,7 @@ struct __CompoundDisambiguation<To, From, IA, IB, false, true, Same>
 {
 	static To* Cast(From* obj)
 	{
-		return IB::DisambiguationCast<To, From>(obj);
+		return IB::template DisambiguationCast<To, From>(obj);
 	};
 };
 
@@ -207,7 +210,7 @@ struct __CompoundDisambiguation<To, From, IA, IB, true, true, false>
 {
 	static To* Cast(From* obj)
 	{
-		return IA::DisambiguationCast<To, From>(obj);
+		return IA::template DisambiguationCast<To, From>(obj);
 	};
 };
 
@@ -216,7 +219,7 @@ struct __CompoundDisambiguation<To, From, IA, IB, true, true, true>
 {
 	static To* Cast(From* obj)
 	{
-		return IB::DisambiguationCast<To, From>(obj);
+		return IB::template DisambiguationCast<To, From>(obj);
 	};
 };
 
@@ -230,28 +233,28 @@ public:
 	template<typename T>
 	struct IsCastable
 	{
-		static const bool Yes = IA::IsCastable<T>::Yes || IB::IsCastable<T>::Yes;
+		static const bool Yes = IA::template IsCastable<T>::Yes || IB::template IsCastable<T>::Yes;
 	};
 
 #if SUPPORTED_CPP0X
 
-	template<class To, class From, typename A = typename IA::IsCastable<To>, typename B = typename IB::IsCastable<To>>
+	template<class To, class From, typename A = typename IA::template IsCastable<To>, typename B = typename IB::template IsCastable<To>>
 	static typename std::enable_if<
 		A::Yes && !B::Yes,
 		To*>::type DisambiguationCast(From* obj)
 	{
-		return IA::DisambiguationCast<To>(obj);
+		return IA::template DisambiguationCast<To>(obj);
 	}
 
-	template<class To, class From, typename A = typename IA::IsCastable<To>, typename B = typename IB::IsCastable<To>>
+	template<class To, class From, typename A = typename IA::template IsCastable<To>, typename B = typename IB::template IsCastable<To>>
 	static typename std::enable_if<
-		!A::Yes && B::Yes,
+		!A::Yes&& B::Yes,
 		To*>::type DisambiguationCast(From* obj)
 	{
-		return IB::DisambiguationCast<To>(obj);
+		return IB::template DisambiguationCast<To>(obj);
 	}
 
-	template<class To, class From, typename A = typename IA::IsCastable<To>, typename B = typename IB::IsCastable<To>>
+	template<class To, class From, typename A = typename IA::template IsCastable<To>, typename B = typename IB::template IsCastable<To>>
 	static typename std::enable_if<
 		!A::Yes && !B::Yes,
 		To*>::type DisambiguationCast(From* obj)
@@ -260,22 +263,22 @@ public:
 		return nullptr;
 	}
 
-	template<class To, class From, typename A = typename IA::IsCastable<To>, typename B = typename IB::IsCastable<To>>
+	template<class To, class From, typename A = typename IA::template IsCastable<To>, typename B = typename IB::template IsCastable<To>>
 	static typename std::enable_if<
-		A::Yes && B::Yes &&
+		A::Yes&& B::Yes &&
 		!std::is_same<typename IA::Interface, From>::value,
 		To*>::type DisambiguationCast(From* obj)
 	{
-		return IA::DisambiguationCast<To, From>(obj);
+		return IA::template DisambiguationCast<To, From>(obj);
 	}
 
-	template<class To, class From, typename A = typename IA::IsCastable<To>, typename B = typename IB::IsCastable<To>>
+	template<class To, class From, typename A = typename IA::template IsCastable<To>, typename B = typename IB::template IsCastable<To>>
 	static typename std::enable_if<
-		A::Yes && B::Yes &&
+		A::Yes&& B::Yes&&
 		std::is_same<typename IA::Interface, From>::value,
 		To*>::type DisambiguationCast(From* obj)
 	{
-		return IB::DisambiguationCast<To, From>(obj);
+		return IB::template DisambiguationCast<To, From>(obj);
 	}
 #else
 private:
@@ -290,7 +293,7 @@ public:
 #endif
 
 	template<typename tObject>
-	static HRESULT InternalQueryInterface(REFIID theIID, tObject * theObj, void ** theOut)
+	static HRESULT InternalQueryInterface(REFIID theIID, tObject* theObj, void** theOut)
 	{
 		HRESULT aRes = IA::InternalQueryInterface(theIID, theObj, theOut);
 
@@ -360,7 +363,7 @@ struct _ComTraits<T, typename _derp_void_alias<typename T::Discoverable>::type>
 	typedef typename T::Discoverable Discoverable;
 
 	template<typename To, typename From>
-	static To* DisambiguationCast(From* obj) { return T::DisambiguationCast<To>(obj); }
+	static To* DisambiguationCast(From* obj) { return T::template DisambiguationCast<To>(obj); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -500,7 +503,7 @@ public:
 	//! This method implies that the implementation class provides
 	//! interface discovery information via the \a InternalQueryInterface
 	//! static member function.
-	STDMETHODIMP QueryInterface(REFIID theIID, void ** theOut)
+	STDMETHODIMP QueryInterface(REFIID theIID, void** theOut)
 	{
 		if (theOut == nullptr) return E_POINTER;
 
@@ -555,11 +558,11 @@ public:
 	//! This method implies that the implementation class provides
 	//! interface discovery information via the \a InternalQueryInterface
 	//! static member function.
-	STDMETHODIMP QueryInterface(REFIID theIID, void ** theOut)
+	STDMETHODIMP QueryInterface(REFIID theIID, void** theOut)
 	{
 		if (theOut == nullptr) return E_POINTER;
 
-		if (theIID == __uuidof(IUnknown) || theIID == __uuidof(IObject) || theIID == __uuidof(Class))
+		if (theIID == __uuidof(IUnknown) || theIID == __uuidof(CS::IObject) || theIID == __uuidof(Class))
 			*theOut = reinterpret_cast<void*>(this);
 		else
 		{
@@ -591,7 +594,7 @@ public:
 
 	virtual void* __stdcall CastTo(REFIID riid) const
 	{
-		if (riid == __uuidof(IUnknown) || riid == __uuidof(IObject) || riid == __uuidof(Class))
+		if (riid == __uuidof(IUnknown) || riid == __uuidof(CS::IObject) || riid == __uuidof(Class))
 			return const_cast<void*>(reinterpret_cast<const void*>(this));
 		else
 		{

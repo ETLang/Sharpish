@@ -9,9 +9,9 @@ namespace CS
 {
 	namespace Details {
 
-			// Memory allocation for objects supporting weak references
-		// It allocates memory for WeakReference and T object. 
-		// Besides it make partial initialization of T object - set the _weakRef variable 
+		// Memory allocation for objects supporting weak references
+	// It allocates memory for WeakReference and T object. 
+	// Besides it make partial initialization of T object - set the _weakRef variable 
 		template<typename T>
 		class MakeAllocator
 		{
@@ -78,13 +78,13 @@ namespace CS
 	template <typename T>
 	com_ptr<T> Make()
 	{
-		static_assert(std::is_base_of<CS::Object, T>::value, "Make can only instantiate types that derive from CS::Object");
+		static_assert(std::is_base_of<IUnknown, T>::value, "Make can only instantiate types that derive from CS::IUnknown");
 
 		com_ptr<T> object;
 		// Using MakeAllocator helper to prevent memory leaks if object throws during construction
 		Details::MakeAllocator<T> allocator;
 
-		void *buffer = allocator.Allocate();
+		void* buffer = allocator.Allocate();
 		if (buffer == nullptr)
 			return object;
 
@@ -98,8 +98,8 @@ namespace CS
 		return object;
 	}
 
-	#define MakeHelper(...) \
-		static_assert(__is_base_of(ComTypeBase, T), "Make can only instantiate types that derive from ComType"); \
+#define MakeHelper(...) \
+		static_assert(std::is_base_of<IUnknown, T>::value, "Make can only instantiate types that derive from IUnknown"); \
 		com_ptr<T> object; \
 		Details::MakeAllocator<T> allocator; \
 		void *buffer = allocator.Allocate(); \
@@ -113,60 +113,60 @@ namespace CS
 		return object;
 
 	template <typename T, typename TArg1>
-	com_ptr<T> Make(TArg1 &&arg1)
+	com_ptr<T> Make(TArg1&& arg1)
 	{
 		MakeHelper(std::forward<TArg1>(arg1))
 	}
 
 	template <typename T, typename TArg1, typename TArg2>
-	com_ptr<T> Make(TArg1 &&arg1, TArg2 &&arg2)
+	com_ptr<T> Make(TArg1&& arg1, TArg2&& arg2)
 	{
 		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2))
 	}
 
 	template <typename T, typename TArg1, typename TArg2, typename TArg3>
-	com_ptr<T> Make(TArg1 &&arg1, TArg2 &&arg2, TArg3 &&arg3)
+	com_ptr<T> Make(TArg1&& arg1, TArg2&& arg2, TArg3&& arg3)
 	{
 		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3))
 	}
 
 	template <typename T, typename TArg1, typename TArg2, typename TArg3, typename TArg4>
-	com_ptr<T> Make(TArg1 &&arg1, TArg2 &&arg2, TArg3 &&arg3, TArg4 &&arg4)
+	com_ptr<T> Make(TArg1&& arg1, TArg2&& arg2, TArg3&& arg3, TArg4&& arg4)
 	{
 		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4))
 	}
 
 	template <typename T, typename TArg1, typename TArg2, typename TArg3, typename TArg4, typename TArg5>
-	com_ptr<T> Make(TArg1 &&arg1, TArg2 &&arg2, TArg3 &&arg3, TArg4 &&arg4, TArg5 &&arg5)
+	com_ptr<T> Make(TArg1&& arg1, TArg2&& arg2, TArg3&& arg3, TArg4&& arg4, TArg5&& arg5)
 	{
 		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4), std::forward<TArg5>(arg5))
 	}
 
 	template <typename T, typename TArg1, typename TArg2, typename TArg3, typename TArg4, typename TArg5, typename TArg6>
-	com_ptr<T> Make(TArg1 &&arg1, TArg2 &&arg2, TArg3 &&arg3, TArg4 &&arg4, TArg5 &&arg5, TArg6 &&arg6)
+	com_ptr<T> Make(TArg1&& arg1, TArg2&& arg2, TArg3&& arg3, TArg4&& arg4, TArg5&& arg5, TArg6&& arg6)
 	{
-		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4), 
+		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4),
 			std::forward<TArg5>(arg5), std::forward<TArg6>(arg6))
 	}
 
 	template <typename T, typename TArg1, typename TArg2, typename TArg3, typename TArg4, typename TArg5, typename TArg6, typename TArg7>
-	com_ptr<T> Make(TArg1 &&arg1, TArg2 &&arg2, TArg3 &&arg3, TArg4 &&arg4, TArg5 &&arg5, TArg6 &&arg6, TArg7 &&arg7)
+	com_ptr<T> Make(TArg1&& arg1, TArg2&& arg2, TArg3&& arg3, TArg4&& arg4, TArg5&& arg5, TArg6&& arg6, TArg7&& arg7)
 	{
-		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4), 
+		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4),
 			std::forward<TArg5>(arg5), std::forward<TArg6>(arg6), std::forward<TArg7>(arg7))
 	}
 
 	template <typename T, typename TArg1, typename TArg2, typename TArg3, typename TArg4, typename TArg5, typename TArg6, typename TArg7, typename TArg8>
-	com_ptr<T> Make(TArg1 &&arg1, TArg2 &&arg2, TArg3 &&arg3, TArg4 &&arg4, TArg5 &&arg5, TArg6 &&arg6, TArg7 &&arg7, TArg8 &&arg8)
+	com_ptr<T> Make(TArg1&& arg1, TArg2&& arg2, TArg3&& arg3, TArg4&& arg4, TArg5&& arg5, TArg6&& arg6, TArg7&& arg7, TArg8&& arg8)
 	{
-		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4), 
+		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4),
 			std::forward<TArg5>(arg5), std::forward<TArg6>(arg6), std::forward<TArg7>(arg7), std::forward<TArg8>(arg8))
 	}
 
 	template <typename T, typename TArg1, typename TArg2, typename TArg3, typename TArg4, typename TArg5, typename TArg6, typename TArg7, typename TArg8, typename TArg9>
-	com_ptr<T> Make(TArg1 &&arg1, TArg2 &&arg2, TArg3 &&arg3, TArg4 &&arg4, TArg5 &&arg5, TArg6 &&arg6, TArg7 &&arg7, TArg8 &&arg8, TArg9 &&arg9)
+	com_ptr<T> Make(TArg1&& arg1, TArg2&& arg2, TArg3&& arg3, TArg4&& arg4, TArg5&& arg5, TArg6&& arg6, TArg7&& arg7, TArg8&& arg8, TArg9&& arg9)
 	{
-		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4), 
+		MakeHelper(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2), std::forward<TArg3>(arg3), std::forward<TArg4>(arg4),
 			std::forward<TArg5>(arg5), std::forward<TArg6>(arg6), std::forward<TArg7>(arg7), std::forward<TArg8>(arg8), std::forward<TArg9>(arg9))
 	}
 }

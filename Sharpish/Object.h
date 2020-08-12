@@ -4,6 +4,7 @@
 #include "Make.h"
 #include "ComClass.h"
 #include "WeakReference.h"
+#include "StringHelper.h"
 
 typedef unsigned __int32 FourCC;
 
@@ -55,7 +56,7 @@ namespace CS
 		virtual ~ComType() { _weakRef->SetUnknown(nullptr); _weakRef->Release(); _weakRef = nullptr; }
 
 		template<typename tSomething, typename ... tParams>
-		ComType(tSomething&& first, tParams && ... theParams)
+		ComType(tSomething&& first, tParams&& ... theParams)
 			: Base(std::forward<tSomething>(first), std::forward<tParams>(theParams)...)
 #ifdef ENABLE_MEMORY_DEBUGGING
 			, DebugWatch(false)
@@ -134,7 +135,7 @@ namespace CS
 		//! This method implies that the implementation class provides
 		//! interface discovery information via the \a InternalQueryInterface
 		//! static member function.
-		STDMETHODIMP QueryInterface(REFIID theIID, void ** theOut)
+		STDMETHODIMP QueryInterface(REFIID theIID, void** theOut)
 		{
 			if (theOut == nullptr) return E_POINTER;
 
@@ -178,7 +179,7 @@ namespace CS
 			/* SFINAE StaticInit exists :) */
 			template <typename A>
 			static decltype(test(&A::StaticInit))
-				test(decltype(&A::StaticInit), void *) {
+				test(decltype(&A::StaticInit), void*) {
 				/* StaticInit exists. What about sig? */
 				typedef decltype(test(&A::StaticInit)) return_type;
 				return return_type();
@@ -205,34 +206,34 @@ namespace CS
 	 * \param Class The class type being implemented.
 	 * \param BaseClass The base class that the defining class will inherit from.
 	 * \param Implements A set of 0 or more interfaces to implement
-	 * 
+	 *
 	 * Use ComObject to implement your own reference-counted class types.
-	 * 
+	 *
 	 * The advantages to using ComObject include:
 	 * - Automatic implementation of IUnknown and safe runtime type casting using `runtime_cast<T>()`.
 	 * - Safe lifecycle management, using com_ptr
 	 * - Ability to use weak referencing, using weak_ptr
 	 * - Ability to request the root ID of the implementing type using GetTypeID
-	 * 
+	 *
 	 * Reference-counted class types must declare an associated UUID.
-	 * 
+	 *
 	 * When instantiating such classes, the proper method is to use `Make<T>()` instead of calling `new()`:
 	 * `com_ptr<Car> newCar = Make<Car>();`
-	 * 
+	 *
 	 * The following example declares a class Car, which derives from Object, followed by a class Truck
 	 * that inherits Car:
-	 * 
-	 *     class comid("b7a9ea93-6b5e-4fde-9a6c-ea9872a00e7e") Car : 
+	 *
+	 *     class comid("b7a9ea93-6b5e-4fde-9a6c-ea9872a00e7e") Car :
 	 *         public CS::ComObject<Car, Object>
 	 *     {
 	 *     };
-	 * 
+	 *
 	 *     class comid("abcdef01-6b5e-4fde-9a6c-ea9872a00e7e") Truck :
 	 *         public CS::ComObject<Truck, Car>
 	 *     {
 	 *     };
 	 *
-	 * 
+	 *
 	 */
 
 	template<typename Class, typename BaseClass = ComType<>, typename... Implements>
@@ -260,7 +261,7 @@ namespace CS
 		{ }
 
 		template<typename tFirst, typename ... tParams>
-		ComObject(tFirst&& firstParam, tParams && ... theParams)
+		ComObject(tFirst&& firstParam, tParams&& ... theParams)
 			: BaseClass(std::forward<tFirst>(firstParam), std::forward<tParams>(theParams)...)
 #ifdef ENABLE_MEMORY_DEBUGGING
 			, DebugWatch(false)
@@ -269,16 +270,16 @@ namespace CS
 
 	public:
 
-		virtual HRESULT STDMETHODCALLTYPE GetWeakReference(Ext::IWeakReference **weakReference)
+		virtual HRESULT STDMETHODCALLTYPE GetWeakReference(Ext::IWeakReference** weakReference)
 		{
-			*weakReference = _weakRef;
+			*weakReference = this->_weakRef;
 			(*weakReference)->AddRef();
 			return S_OK;
 		}
 
 		ULONG STDMETHODCALLTYPE AddRef()
 		{
-			ULONG refCount = _weakRef->IncrementStrongReference();
+			ULONG refCount = this->_weakRef->IncrementStrongReference();
 
 #ifdef ENABLE_MEMORY_DEBUGGING
 			BREAK_CONDITION(DebugWatch);
@@ -291,7 +292,7 @@ namespace CS
 		{
 			ULONG aNumRefs;
 
-			aNumRefs = _weakRef->DecrementStrongReference();
+			aNumRefs = this->_weakRef->DecrementStrongReference();
 
 #ifdef ENABLE_MEMORY_DEBUGGING
 			BREAK_CONDITION(DebugWatch);
@@ -312,7 +313,7 @@ namespace CS
 		//! This method implies that the implementation class provides
 		//! interface discovery information via the \a InternalQueryInterface
 		//! static member function.
-		STDMETHODIMP QueryInterface(REFIID theIID, void ** theOut)
+		STDMETHODIMP QueryInterface(REFIID theIID, void** theOut)
 		{
 			if (theOut == nullptr) return E_POINTER;
 
@@ -377,7 +378,7 @@ namespace CS
 		{
 			if (!outValue) return E_POINTER;
 
-			*outValue = Help::String::AsBlob(ToString()).Detach();
+			*outValue = CS::Help::String::AsBlob(ToString()).Detach();
 
 			return S_OK;
 		}
@@ -403,17 +404,17 @@ namespace CS
 
 	/**
 	 * \brief Base class for reference-counted types defined using Sharpish.
-	 * 
+	 *
 	 * When declaring your own reference type, don't directly inherit from Object
 	 * or any other reference type. Instead, inherit from ComObject and pass your
 	 * base type as the appropriate template parameter.
-	 * 
+	 *
 	 * \see CS::ComObject
 	 */
 	class __declspec(uuid("b7a9ea93-6b5e-4fde-9a6c-ea9872a00e7e"))
 		Object : public ComObject<Object> { };
 
-	}
+}
 
 //template<class T>
 //__declspec(selectany) bool CS::Details::HasStaticInitializer<T>::isInitialized = [](void(*si)()) { CS::Details::RSI(si); return false; }(&T::StaticInit);
